@@ -20,6 +20,7 @@ const Search = () => {
 
   const { currentUser } = useContext(AuthContext);
 
+  //Search user from users collection
   const handleSearch = async () => {
     const q = query(collection(db, "users"), where("userName", "==", username));
 
@@ -34,6 +35,7 @@ const Search = () => {
     }
   };
 
+  //Select user to chat
   const handleSelect = async () => {
     //check whether the group(chats in firestore) exist, if not create
     const combinedID =
@@ -56,6 +58,7 @@ const Search = () => {
           [combinedID + ".date"]: serverTimestamp(),
         });
 
+        //Create selected user chat
         try {
           await updateDoc(doc(db, "userChats", user.uid), {
             [combinedID + ".userInfo"]: {
@@ -77,6 +80,7 @@ const Search = () => {
     setUsername("");
   };
 
+  //On press enter in search input 
   const handleKey = (e) => {
     e.code === "Enter" && handleSearch();
   };

@@ -21,15 +21,18 @@ const Input = () => {
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
 
+  //Send message
   const handleSend = async () => {
     if (img) {
       const storageRef = ref(storage, uuid());
 
+      //Upload image to storage
       const uploadTask = uploadBytesResumable(storageRef, img);
 
       uploadTask.on(
         (error) => {},
         () => {
+          //Get image url & store message to chats collection
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
             await updateDoc(doc(db, "chats", data.chatId), {
               messages: arrayUnion({
@@ -44,6 +47,7 @@ const Input = () => {
         }
       );
     } else {
+      //Store message data to chats collection
       await updateDoc(doc(db, "chats", data.chatId), {
         messages: arrayUnion({
           id: uuid(),
@@ -54,6 +58,7 @@ const Input = () => {
       });
     }
 
+    //Update current user's userChats last message
     await updateDoc(doc(db, "userChats", currentUser.uid), {
       [data.chatId + ".lastMessage"]: {
         text,
@@ -61,6 +66,7 @@ const Input = () => {
       [data.chatId + ".date"]: serverTimestamp(),
     });
 
+    //Update user's userChats last message
     await updateDoc(doc(db, "userChats", data.user.uid), {
       [data.chatId + ".lastMessage"]: {
         text,
@@ -72,6 +78,7 @@ const Input = () => {
     setImg(null);
   };
 
+  //On press enter in input 
   const handleKey = (e) => {
     e.code === "Enter" && handleSend();
   };

@@ -10,6 +10,7 @@ export const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  //Submit user data and register
   const handleSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();

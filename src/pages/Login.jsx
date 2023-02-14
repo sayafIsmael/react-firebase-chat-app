@@ -8,6 +8,7 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  //Login user with email and password (firebase)
   const handleSubmit = async (e) => {
     e.preventDefault();
     const email = e.target[0].value;

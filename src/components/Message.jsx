@@ -8,6 +8,7 @@ const Message = ({ message }) => {
 
   const ref = useRef();
 
+  //Scroll to bottom when user send message
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   });
