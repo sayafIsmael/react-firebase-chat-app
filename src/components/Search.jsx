@@ -12,6 +12,8 @@ import {
 } from "firebase/firestore";
 import { db } from "./../config/firebase";
 import { AuthContext } from "../context/AuthContext";
+import { ChatContext } from "../context/ChatContext";
+import { v4 as uuid } from "uuid";
 
 const Search = () => {
   const [username, setUsername] = useState("");
@@ -19,6 +21,7 @@ const Search = () => {
   const [err, setErr] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
+  const { dispatch } = useContext(ChatContext);
 
   //Search user from users collection
   const handleSearch = async () => {
@@ -38,10 +41,7 @@ const Search = () => {
   //Select user to chat
   const handleSelect = async () => {
     //check whether the group(chats in firestore) exist, if not create
-    const combinedID =
-      currentUser.uid > user.uid
-        ? currentUser.uid + user.uid
-        : user.uid + currentUser.uid;
+    const combinedID = uuid();
     try {
       const res = await getDoc(doc(db, "chats", combinedID));
       if (!res.exists()) {
@@ -68,6 +68,15 @@ const Search = () => {
             },
             [combinedID + ".date"]: serverTimestamp(),
           });
+          dispatch({
+            type: "CHANGE_USER",
+            payload: {
+              uid: user.uid,
+              userName: user.userName,
+              photoURL: user.photoURL,
+            },
+            chatId: combinedID,
+          });
         } catch (error) {
           console.log("updateDoc update err", error);
         }
@@ -80,7 +89,7 @@ const Search = () => {
     setUsername("");
   };
 
-  //On press enter in search input 
+  //On press enter in search input
   const handleKey = (e) => {
     e.code === "Enter" && handleSearch();
   };

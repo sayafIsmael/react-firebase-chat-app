@@ -21,8 +21,8 @@ const Messages = () => {
 
   return (
     <div className="messages">
-      {messages.map((m) => (
-        <Message owner={false} message={m} />
+      {messages.map((m, i) => (
+        <Message owner={false} message={m} key={i}/>
       ))}
     </div>
   );
