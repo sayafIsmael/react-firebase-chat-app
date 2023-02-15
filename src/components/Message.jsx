@@ -35,11 +35,21 @@ const Message = ({ message }) => {
               ? currentUser.displayName
               : data.user.userName}
           </span>{" "}
-          {/* Web Designer */} {`${message.date.toDate().toDateString()} ${message.date.toDate().toLocaleTimeString()}`}
+          {/* Web Designer */}{" "}
+          {`${message.date.toDate().toDateString()} ${message.date
+            .toDate()
+            .toLocaleTimeString()}`}
         </p>
         <div className="messageContent">
           {message.text.length > 0 && <p>{message.text}</p>}
           {message.img && <img src={message.img} alt="" />}
+          {message.imageUrls && (
+            <div className="images">
+              {message.imageUrls.map((image, i) => (
+                <img src={image} alt="" key={i}/>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
