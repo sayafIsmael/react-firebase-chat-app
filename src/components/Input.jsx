@@ -11,6 +11,7 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
+import ProgressBar from "react-bootstrap/ProgressBar";
 import { db, storage } from "./../config/firebase";
 import { v4 as uuid } from "uuid";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
@@ -20,6 +21,7 @@ const Input = () => {
   const [text, setText] = useState("");
   const [images, setImages] = useState([]);
   const [imagesURL, setImagesURL] = useState([]);
+  const [progress, setProgress] = useState(65);
 
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
@@ -29,12 +31,21 @@ const Input = () => {
     const promises = [];
 
     for (const file of files) {
-      const storageRef = ref(storage, uuid());
+      const id = uuid();
+      const storageRef = ref(storage, id);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       const promise = new Promise((resolve, reject) => {
         uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+            setProgress(progress);
+          },
           (error) => {
+            console.log("upload error: ", error);
             reject(error);
           },
           async () => {
@@ -123,6 +134,7 @@ const Input = () => {
 
   //Store Images to state
   const handleImageSelect = (e) => {
+    setProgress(0);
     const selectedImages = Array.from(e.target.files).filter((file) =>
       file.type.startsWith("image/")
     );
@@ -132,7 +144,7 @@ const Input = () => {
       const reader = new FileReader();
 
       reader.addEventListener("load", () => {
-        setImagesURL((prevImages)=>[...prevImages, reader.result]);
+        setImagesURL((prevImages) => [...prevImages, reader.result]);
       });
 
       reader.readAsDataURL(file);
@@ -141,12 +153,17 @@ const Input = () => {
   };
 
   return (
-    <div>
-      <div className="image-preview">
-        {[...imagesURL].map((img, i) => (
-          <img src={img} key={i} />
-        ))}
-      </div>
+    <div className="input-container">
+      {[...imagesURL].length > 0 && (
+        <div>
+          <ProgressBar now={progress} label={`${progress}%`} />
+          <div className="image-preview">
+            {[...imagesURL].map((img, i) => (
+              <img src={img} key={i} />
+            ))}
+          </div>
+        </div>
+      )}
       <div className="messageInput">
         <MdAttachment size={20} color="#C3CAD9" />
         <input

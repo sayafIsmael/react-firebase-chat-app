@@ -255,16 +255,20 @@
       }
     }
 
-    .image-preview {
-      background-color: lightgray;
-      max-width: 100%;
-      display: flex;
-      gap: 10px;
-      padding: 10px;
-      position: absolute;
-      bottom: 167px;
-      img {
-        width: 100px;
+    .input-container {
+      position: relative;
+
+      .image-preview {
+        background-color: lightgray;
+        max-width: 100%;
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        position: absolute;
+        bottom: 69px;
+        img {
+          width: 100px;
+        }
       }
     }
 
