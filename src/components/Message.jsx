@@ -46,7 +46,18 @@ const Message = ({ message }) => {
           {message.imageUrls && (
             <div className="images">
               {message.imageUrls.map((image, i) => (
-                <img src={image} alt="" key={i}/>
+                <img src={image} alt="" key={i} />
+              ))}
+            </div>
+          )}
+          {message.filesUrls && (
+            <div className="files">
+              {message.filesUrls.map((file, i) => (
+                <p>
+                  <a href={file.url} target="_blank">
+                    {file.filename}
+                  </a>
+                </p>
               ))}
             </div>
           )}

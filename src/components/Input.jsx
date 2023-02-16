@@ -20,17 +20,19 @@ import { toast } from "react-toastify";
 const Input = () => {
   const [text, setText] = useState("");
   const [images, setImages] = useState([]);
+  const [files, setFiles] = useState([]);
   const [imagesURL, setImagesURL] = useState([]);
   const [progress, setProgress] = useState(65);
+  const [filenames, setFilenames] = useState([]);
 
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
 
   //Upload images and store images to the imageUrls
-  const uploadFiles = async (files) => {
+  const uploadFiles = async (files, attachments) => {
     const promises = [];
 
-    for (const file of files) {
+    for (const [index, file] of files.entries()) {
       const id = uuid();
       const storageRef = ref(storage, id);
       const uploadTask = uploadBytesResumable(storageRef, file);
@@ -51,7 +53,11 @@ const Input = () => {
           async () => {
             getDownloadURL(uploadTask.snapshot.ref).then(
               async (downloadURL) => {
-                resolve(downloadURL);
+                if (attachments) {
+                  resolve({ filename: filenames[index], url: downloadURL });
+                } else {
+                  resolve(downloadURL);
+                }
               }
             );
           }
@@ -63,6 +69,7 @@ const Input = () => {
 
     const downloadUrls = await Promise.all(promises);
     setImagesURL([]);
+    setFilenames([]);
     return downloadUrls;
   };
 
@@ -83,6 +90,20 @@ const Input = () => {
             senderId: currentUser.uid,
             date: Timestamp.now(),
             imageUrls,
+          }),
+        });
+      } else if (files.length) {
+        const filesUrls = await uploadFiles(files, "attachments");
+        console.log("filesUrls:", filesUrls);
+
+        //Update document in chats collection
+        await updateDoc(doc(db, "chats", data.chatId), {
+          messages: arrayUnion({
+            id: uuid(),
+            text,
+            senderId: currentUser.uid,
+            date: Timestamp.now(),
+            filesUrls,
           }),
         });
       } else {
@@ -122,6 +143,7 @@ const Input = () => {
 
       setText("");
       setImages([]);
+      setFiles([]);
     } else {
       toast.error("Please select an user to send message!");
     }
@@ -152,39 +174,82 @@ const Input = () => {
     console.log("allImages:", [...imagesURL]);
   };
 
+  //Store Files to state
+  const handleFileSelect = (e) => {
+    setProgress(0);
+    const selectedFiles = Array.from(e.target.files);
+    setFiles([...selectedFiles]);
+
+    selectedFiles.forEach((file) => {
+      const fileName = file.name;
+      const extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+      setFilenames((files) => [...files, `${fileName}`]);
+    });
+  };
+  
   return (
-    <div className="input-container">
-      {[...imagesURL].length > 0 && (
-        <div>
-          <ProgressBar now={progress} label={`${progress}%`} />
-          <div className="image-preview">
-            {[...imagesURL].map((img, i) => (
-              <img src={img} key={i} />
-            ))}
+    <>
+      <div>
+        {data.chatId != "null" && (
+          <div className="input-container">
+            {[...imagesURL].length > 0 && (
+              <div>
+                <ProgressBar now={progress} label={`${progress}%`} />
+                <div className="image-preview">
+                  {[...imagesURL].map((img, i) => (
+                    <img src={img} key={i} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {[...filenames].length > 0 && (
+              <div>
+                <ProgressBar now={progress} label={`${progress}%`} />
+                <div className="image-preview">
+                  {[...filenames].map((filename, i) => (
+                    <p key={i}>
+                      {filename}
+                      {[...filenames].length > 1 &&
+                        i != [...filenames].length - 1 &&
+                        ","}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="messageInput">
+              <input
+                type={"file"}
+                multiple
+                style={{ display: "none" }}
+                id="attachments"
+                onChange={handleFileSelect}
+              />
+              <label htmlFor="attachments">
+                <MdAttachment size={20} color="#C3CAD9" />
+              </label>
+              <input
+                type={"file"}
+                multiple
+                style={{ display: "none" }}
+                id="file"
+                onChange={handleImageSelect}
+              />
+              <label htmlFor="file">
+                <BsImageFill size={20} color="#C3CAD9" />
+              </label>
+              <input
+                placeholder="Type message"
+                onChange={(e) => setText(e.target.value)}
+                value={text}
+                onKeyDown={handleKey}
+              />
+              <MdSend size={20} color="#3361ff" onClick={handleSend} />
+            </div>
           </div>
-        </div>
-      )}
-      <div className="messageInput">
-        <MdAttachment size={20} color="#C3CAD9" />
-        <input
-          type={"file"}
-          multiple
-          style={{ display: "none" }}
-          id="file"
-          onChange={handleImageSelect}
-        />
-        <label htmlFor="file">
-          <BsImageFill size={20} color="#C3CAD9" />
-        </label>
-        <input
-          placeholder="Type message"
-          onChange={(e) => setText(e.target.value)}
-          value={text}
-          onKeyDown={handleKey}
-        />
-        <MdSend size={20} color="#3361ff" onClick={handleSend} />
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

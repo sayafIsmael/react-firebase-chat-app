@@ -175,7 +175,7 @@
     .messages {
       padding: 10px;
       overflow: scroll;
-      height: calc(100% - 75px);
+      height: calc(100% - 50px);
 
       .message {
         display: flex;
@@ -237,6 +237,9 @@
               color: white;
               border-radius: 10px 0px 10px 10px;
             }
+            a{
+              color: white;
+            }
           }
           .userInfo {
             display: flex;
@@ -259,15 +262,19 @@
       position: relative;
 
       .image-preview {
-        background-color: lightgray;
+        background-color: rgb(233, 233, 233);
         max-width: 100%;
         display: flex;
         gap: 10px;
         padding: 10px;
         position: absolute;
         bottom: 69px;
+        border-radius: 5px;
         img {
           width: 100px;
+        }
+        p{
+          color: #3388ff;
         }
       }
     }
