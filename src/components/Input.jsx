@@ -10,6 +10,7 @@ import {
   Timestamp,
   updateDoc,
   getDoc,
+  setDoc,
 } from "firebase/firestore";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { db, storage } from "./../config/firebase";
@@ -77,68 +78,15 @@ const Input = () => {
   const handleSend = async () => {
     console.log("data.chatId:", data.chatId);
     const res = await getDoc(doc(db, "chats", data.chatId));
-    if (data.chatId != "null" && res.exists()) {
-      if (images.length) {
-        const imageUrls = await uploadFiles(images);
-        console.log("imageUrls:", imageUrls);
-
-        //Update document in chats collection
-        await updateDoc(doc(db, "chats", data.chatId), {
-          messages: arrayUnion({
-            id: uuid(),
-            text,
-            senderId: currentUser.uid,
-            date: Timestamp.now(),
-            imageUrls,
-          }),
-        });
-      } else if (files.length) {
-        const filesUrls = await uploadFiles(files, "attachments");
-        console.log("filesUrls:", filesUrls);
-
-        //Update document in chats collection
-        await updateDoc(doc(db, "chats", data.chatId), {
-          messages: arrayUnion({
-            id: uuid(),
-            text,
-            senderId: currentUser.uid,
-            date: Timestamp.now(),
-            filesUrls,
-          }),
+    if (data.chatId != "null") {
+      const chatExists = res.exists();
+      if (!chatExists) {
+        console.log("Chat not exists!");
+        createChat(() => {
+          sendMessage();
         });
       } else {
-        //Store message data to chats collection
-        await updateDoc(doc(db, "chats", data.chatId), {
-          messages: arrayUnion({
-            id: uuid(),
-            text,
-            senderId: currentUser.uid,
-            date: Timestamp.now(),
-          }),
-        });
-      }
-
-      try {
-        //Update current user's userChats last message
-        await updateDoc(doc(db, "userChats", currentUser.uid), {
-          [data.chatId + ".lastMessage"]: {
-            text,
-          },
-          [data.chatId + ".date"]: serverTimestamp(),
-        });
-
-        console.log("selected user currentUser.uid: ", currentUser.uid);
-        console.log("selected user data.user.uid: ", data.user.uid);
-
-        //Update user's userChats last message
-        await updateDoc(doc(db, "userChats", data.user.uid), {
-          [data.chatId + ".lastMessage"]: {
-            text,
-          },
-          [data.chatId + ".date"]: serverTimestamp(),
-        });
-      } catch (error) {
-        console.log("Update userChats error", error);
+        sendMessage();
       }
 
       setText("");
@@ -146,6 +94,105 @@ const Input = () => {
       setFiles([]);
     } else {
       toast.error("Please select an user to send message!");
+    }
+  };
+
+  //Create new chats and user chat
+  const createChat = async (callback) => {
+    try {
+      //Create chats with empty messages
+      await setDoc(doc(db, "chats", data.chatId), {
+        messages: [],
+      });
+
+      //create current user chat
+      await updateDoc(doc(db, "userChats", currentUser.uid), {
+        [data.chatId + ".userInfo"]: {
+          uid: data.user.uid,
+          userName: data.user.userName,
+          photoURL: data.user.photoURL,
+        },
+        [data.chatId + ".date"]: serverTimestamp(),
+      });
+
+      //create selected user chats
+      await updateDoc(doc(db, "userChats", data.user.uid), {
+        [data.chatId + ".userInfo"]: {
+          uid: currentUser.uid,
+          userName: currentUser.displayName,
+          photoURL: currentUser.photoURL,
+        },
+        [data.chatId + ".date"]: serverTimestamp(),
+      });
+
+      callback();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (images.length) {
+      const imageUrls = await uploadFiles(images);
+      console.log("imageUrls:", imageUrls);
+
+      //Update document in chats collection
+      await updateDoc(doc(db, "chats", data.chatId), {
+        messages: arrayUnion({
+          id: uuid(),
+          text,
+          senderId: currentUser.uid,
+          date: Timestamp.now(),
+          imageUrls,
+        }),
+      });
+    } else if (files.length) {
+      const filesUrls = await uploadFiles(files, "attachments");
+      console.log("filesUrls:", filesUrls);
+
+      //Update document in chats collection
+      await updateDoc(doc(db, "chats", data.chatId), {
+        messages: arrayUnion({
+          id: uuid(),
+          text,
+          senderId: currentUser.uid,
+          date: Timestamp.now(),
+          filesUrls,
+        }),
+      });
+    } else {
+      //Store message data to chats collection
+      await updateDoc(doc(db, "chats", data.chatId), {
+        messages: arrayUnion({
+          id: uuid(),
+          text,
+          senderId: currentUser.uid,
+          date: Timestamp.now(),
+        }),
+      });
+    }
+
+    try {
+      //Update current user's userChats last message
+      await updateDoc(doc(db, "userChats", currentUser.uid), {
+        [data.chatId + ".lastMessage"]: {
+          text,
+        },
+        [data.chatId + ".date"]: serverTimestamp(),
+      });
+
+      console.log("selected user currentUser.uid: ", currentUser.uid);
+      console.log("selected user data.user.uid: ", data.user.uid);
+
+      //Update user's userChats last message
+      await updateDoc(doc(db, "userChats", data.user.uid), {
+        [data.chatId + ".lastMessage"]: {
+          text,
+        },
+        [data.chatId + ".date"]: serverTimestamp(),
+      });
+    } catch (error) {
+      console.log("Update userChats error", error);
     }
   };
 
@@ -186,7 +233,7 @@ const Input = () => {
       setFilenames((files) => [...files, `${fileName}`]);
     });
   };
-  
+
   return (
     <>
       <div>

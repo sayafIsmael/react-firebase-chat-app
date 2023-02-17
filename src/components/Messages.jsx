@@ -11,7 +11,11 @@ const Messages = () => {
   //Get messages from chats collection
   useEffect(() => {
     const unSub = onSnapshot(doc(db, "chats", data.chatId), (doc) => {
-      doc.exists() && setMessages(doc.data().messages);
+      if (doc.exists()) {
+        setMessages(doc.data().messages);
+      } else {
+        setMessages([]);
+      }
     });
 
     return () => {
@@ -22,7 +26,7 @@ const Messages = () => {
   return (
     <div className="messages">
       {messages.map((m, i) => (
-        <Message owner={false} message={m} key={i}/>
+        <Message owner={false} message={m} key={i} />
       ))}
     </div>
   );

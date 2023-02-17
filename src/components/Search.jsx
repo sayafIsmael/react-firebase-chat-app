@@ -17,7 +17,8 @@ import { v4 as uuid } from "uuid";
 
 const Search = () => {
   const [username, setUsername] = useState("");
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState([]);
+  const [users, setUsers] = useState([]);
   const [err, setErr] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
@@ -25,68 +26,65 @@ const Search = () => {
 
   //Search user from users collection
   const handleSearch = async () => {
-    const q = query(collection(db, "users"), where("userName", "==", username));
+    if (username.length) {
+      const q = query(
+        collection(db, "users"),
+        where("userName", ">=", username),
+        where("userName", "<=", username + "\uf8ff")
+      );
 
-    try {
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        setUser(doc.data());
-      });
-    } catch (error) {
-      console.log(error);
-      setErr(error);
+      try {
+        const querySnapshot = await getDocs(q);
+        const data = querySnapshot.docs.map((doc) => doc.data());
+        setUsers(data);
+      } catch (error) {
+        console.log(error);
+        setErr(error);
+      }
+    } else {
+      setUsers([]);
     }
   };
 
   //Select user to chat
-  const handleSelect = async () => {
-    //check whether the group(chats in firestore) exist, if not create
-    const combinedID = uuid();
-    try {
-      const res = await getDoc(doc(db, "chats", combinedID));
-      if (!res.exists()) {
-        //create a chat in chats collection
-        await setDoc(doc(db, "chats", combinedID), { messages: [] });
+  const handleSelect = async (user) => {
+    const res = await getDoc(doc(db, "userChats", currentUser.uid));
+    const resData = res.data();
+    const data = Object.keys(resData).map((key) => ({
+      chatId: key,
+      userInfo: resData[key].userInfo,
+    }));
 
-        //create user chats
-        await updateDoc(doc(db, "userChats", currentUser.uid), {
-          [combinedID + ".userInfo"]: {
+    console.log("data:", data);
+
+    if (data.length > 0) {
+      const chat = [...data].find((chat) => chat.userInfo.uid === user.uid);
+      if (chat) {
+        console.log("Found chat with uid:", user.uid, chat);
+        dispatch({
+          type: "CHANGE_USER",
+          payload: {
             uid: user.uid,
             userName: user.userName,
             photoURL: user.photoURL,
           },
-          [combinedID + ".date"]: serverTimestamp(),
+          chatId: chat.chatId,
         });
-
-        //Create selected user chat
-        try {
-          await updateDoc(doc(db, "userChats", user.uid), {
-            [combinedID + ".userInfo"]: {
-              uid: currentUser.uid,
-              userName: currentUser.displayName,
-              photoURL: currentUser.photoURL,
-            },
-            [combinedID + ".date"]: serverTimestamp(),
-          });
-          dispatch({
-            type: "CHANGE_USER",
-            payload: {
-              uid: user.uid,
-              userName: user.userName,
-              photoURL: user.photoURL,
-            },
-            chatId: combinedID,
-          });
-        } catch (error) {
-          console.log("updateDoc update err", error);
-        }
+        setUsername("")
+      } else {
+        console.log("No chat found with uid:", user.uid);
+        const combinedID = uuid();
+        dispatch({
+          type: "CHANGE_USER",
+          payload: {
+            uid: user.uid,
+            userName: user.userName,
+            photoURL: user.photoURL,
+          },
+          chatId: combinedID,
+        });
       }
-    } catch (error) {
-      console.log(error);
     }
-
-    setUser(null);
-    setUsername("");
   };
 
   //On press enter in search input
@@ -101,23 +99,35 @@ const Search = () => {
           type="text"
           placeholder="Search..."
           onKeyDown={handleKey}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            handleSearch();
+          }}
           value={username}
         />
       </div>
       {err && <span>User not found!</span>}
-      {user && currentUser.uid !== user.uid && (
-        <div className="userChat" onClick={handleSelect}>
-          <img src={user.photoURL} alt="" />
-          <div className="userChatInfo">
-            <div className="chatHeader">
-              <span>{user.userName}</span>
-              {/* <span>5:30pm</span> */}
-            </div>
-            {/* <p>Message preview goes here</p> */}
-          </div>
-        </div>
-      )}
+      {username.length > 0 &&
+        users.map((user, index) => {
+          return (
+            currentUser.uid !== user.uid && (
+              <div
+                className="userChat"
+                onClick={() => handleSelect(user)}
+                key={user.uid}
+              >
+                <img src={user.photoURL} alt="" />
+                <div className="userChatInfo">
+                  <div className="chatHeader">
+                    <span>{user.userName}</span>
+                    {/* <span>5:30pm</span> */}
+                  </div>
+                  {/* <p>Message preview goes here</p> */}
+                </div>
+              </div>
+            )
+          );
+        })}
     </div>
   );
 };
