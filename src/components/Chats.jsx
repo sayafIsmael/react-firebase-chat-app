@@ -3,9 +3,11 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { db } from "../config/firebase";
+import { ChatOptions } from "./ChatOptions";
 
 const Chats = () => {
   const [chats, setChats] = useState([]);
+  const [showOptions, setShowOptions] = useState([]);
 
   const { currentUser } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
@@ -26,8 +28,8 @@ const Chats = () => {
   }, [currentUser.uid]);
 
   const handleSelect = (u, i) => {
-    console.log("Chat Id:",i)
-    dispatch({ type: "CHANGE_USER", payload: u, chatId:i });
+    console.log("Chat Id:", i);
+    dispatch({ type: "CHANGE_USER", payload: u, chatId: i });
   };
 
   return (
@@ -35,21 +37,32 @@ const Chats = () => {
       {Object.entries(chats)
         ?.sort((a, b) => b[1].date - a[1].date)
         .map((chat) => (
-          <div
-            className="userChat"
-            key={chat[0]}
-            onClick={() => handleSelect(chat[1].userInfo,chat[0])}
-          >
-            <img src={chat[1].userInfo.photoURL} alt="" />
-            <div className="userChatInfo">
-              <div className="chatHeader">
-                <span>{chat[1].userInfo.userName}</span>
-                {chat[1].date && (
-                  <span>{chat[1].date.toDate().toLocaleTimeString()}</span>
-                )}
+          <div key={chat[0]}>
+            {(chat[1].removed ? chat[1].removed == false : true) && (
+              <div
+                className="userChat"
+                onClick={() => handleSelect(chat[1].userInfo, chat[0])}
+              >
+                <img src={chat[1].userInfo.photoURL} alt="" />
+                <div className="userChatInfo">
+                  <div className="chatHeader">
+                    <span>{chat[1].userInfo.userName}</span>
+                    {chat[1].date && (
+                      <div className="info">
+                        <span>
+                          {chat[1].date.toDate().toLocaleTimeString()}
+                        </span>
+                        <ChatOptions
+                          chatId={chat[0]}
+                          userId={chat[1].userInfo.uid}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <p>{chat[1].lastMessage?.text}</p>
+                </div>
               </div>
-              <p>{chat[1].lastMessage?.text}</p>
-            </div>
+            )}
           </div>
         ))}
     </div>

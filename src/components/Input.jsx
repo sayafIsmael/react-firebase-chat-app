@@ -178,6 +178,7 @@ const Input = () => {
         [data.chatId + ".lastMessage"]: {
           text,
         },
+        [data.chatId + ".removed"]: false,
         [data.chatId + ".date"]: serverTimestamp(),
       });
 
