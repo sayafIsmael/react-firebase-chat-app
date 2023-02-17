@@ -1,17 +1,34 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
+import { Unsend } from "./Unsend";
 
-const Message = ({ message }) => {
+const Message = ({ message, index }) => {
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
-
+  const [canUnsend, setCanUnsend] = useState(false);
   const ref = useRef();
 
   //Scroll to bottom when user send message
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   });
+
+  //Check if user can unsend a message
+  const checkUserCanUnsend = (message) => {
+    // Convert server timestamp to JavaScript Date object
+    const serverDate = message.date.toDate();
+    // Get current time
+    const currentTime = Date.now();
+    if (message.senderId === currentUser.uid) {
+      if (Math.abs(serverDate.getTime() - currentTime) <= 30000) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  };
 
   return (
     <div
@@ -41,6 +58,14 @@ const Message = ({ message }) => {
             .toLocaleTimeString()}`}
         </p>
         <div className="messageContent">
+          {message.senderId === currentUser.uid &&
+            checkUserCanUnsend(message) && (
+              <Unsend
+                canUnsend={checkUserCanUnsend(message)}
+                serverDate={message.date.toDate()}
+                index={index}
+              />
+            )}
           {message.text.length > 0 && <p>{message.text}</p>}
           {message.img && <img src={message.img} alt="" />}
           {message.imageUrls && (

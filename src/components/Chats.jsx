@@ -27,9 +27,13 @@ const Chats = () => {
     currentUser.uid && getChats();
   }, [currentUser.uid]);
 
-  const handleSelect = (u, i) => {
+  const handleSelect = (u, i, lastRemovedDate) => {
     console.log("Chat Id:", i);
-    dispatch({ type: "CHANGE_USER", payload: u, chatId: i });
+    dispatch({
+      type: "CHANGE_USER",
+      payload: { ...u, lastRemovedDate: lastRemovedDate || null },
+      chatId: i,
+    });
   };
 
   return (
@@ -41,7 +45,13 @@ const Chats = () => {
             {(chat[1].removed ? chat[1].removed == false : true) && (
               <div
                 className="userChat"
-                onClick={() => handleSelect(chat[1].userInfo, chat[0])}
+                onClick={() =>
+                  handleSelect(
+                    chat[1].userInfo,
+                    chat[0],
+                    chat[1].lastRemovedDate
+                  )
+                }
               >
                 <img src={chat[1].userInfo.photoURL} alt="" />
                 <div className="userChatInfo">

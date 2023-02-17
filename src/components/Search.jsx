@@ -53,6 +53,7 @@ const Search = () => {
     const data = Object.keys(resData).map((key) => ({
       chatId: key,
       userInfo: resData[key].userInfo,
+      lastRemovedDate: resData[key].lastRemovedDate || null,
     }));
 
     console.log("data:", data);
@@ -67,23 +68,25 @@ const Search = () => {
             uid: user.uid,
             userName: user.userName,
             photoURL: user.photoURL,
+            lastRemovedDate: chat.lastRemovedDate,
           },
           chatId: chat.chatId,
         });
-        setUsername("")
-      } else {
-        console.log("No chat found with uid:", user.uid);
-        const combinedID = uuid();
-        dispatch({
-          type: "CHANGE_USER",
-          payload: {
-            uid: user.uid,
-            userName: user.userName,
-            photoURL: user.photoURL,
-          },
-          chatId: combinedID,
-        });
+        setUsername("");
       }
+    } else {
+      console.log("No chat found with uid:", user.uid);
+      const combinedID = uuid();
+      dispatch({
+        type: "CHANGE_USER",
+        payload: {
+          uid: user.uid,
+          userName: user.userName,
+          photoURL: user.photoURL,
+        },
+        chatId: combinedID,
+      });
+      setUsername("");
     }
   };
 

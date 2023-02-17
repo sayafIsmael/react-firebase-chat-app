@@ -27,7 +27,7 @@ const Input = () => {
   const [filenames, setFilenames] = useState([]);
 
   const { currentUser } = useContext(AuthContext);
-  const { data } = useContext(ChatContext);
+  const { data, dispatch } = useContext(ChatContext);
 
   //Upload images and store images to the imageUrls
   const uploadFiles = async (files, attachments) => {
@@ -88,6 +88,14 @@ const Input = () => {
       } else {
         sendMessage();
       }
+
+      dispatch({
+        type: "CHANGE_USER",
+        payload: data.user,
+        chatId: data.chatId,
+        lastRemovedDate: data.lastRemovedDate || "null",
+        lastMessage: text,
+      });
 
       setText("");
       setImages([]);
@@ -190,6 +198,7 @@ const Input = () => {
         [data.chatId + ".lastMessage"]: {
           text,
         },
+        [data.chatId + ".removed"]: false,
         [data.chatId + ".date"]: serverTimestamp(),
       });
     } catch (error) {

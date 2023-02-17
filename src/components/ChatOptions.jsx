@@ -39,6 +39,8 @@ export const ChatOptions = ({ chatId, userId }) => {
         doc(db, "userChats", currentUser.uid),
         {
           [chatId + ".removed"]: true,
+          [chatId + ".lastMessage"]: {text: ""},
+          [chatId + ".lastRemovedDate"]: serverTimestamp(),
         },
         { merge: true }
       );
