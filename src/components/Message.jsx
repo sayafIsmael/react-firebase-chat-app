@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { Unsend } from "./Unsend";
+import { MdDownloadForOffline } from "react-icons/md";
 
 const Message = ({ message, index }) => {
   const { currentUser } = useContext(AuthContext);
@@ -13,6 +14,17 @@ const Message = ({ message, index }) => {
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   });
+
+  const downloadFile = (url, filename = "aaaaaaa") => {
+    // This can be downloaded directly:
+    const xhr = new XMLHttpRequest();
+    xhr.responseType = "blob";
+    xhr.onload = (event) => {
+      const blob = xhr.response;
+    };
+    xhr.open("GET", url);
+    xhr.send();
+  };
 
   //Check if user can unsend a message
   const checkUserCanUnsend = (message) => {
@@ -71,7 +83,10 @@ const Message = ({ message, index }) => {
           {message.imageUrls && (
             <div className="images">
               {message.imageUrls.map((image, i) => (
-                <img src={image} alt="" key={i} />
+                <div key={i}>
+                  <MdDownloadForOffline onClick={() => downloadFile(image)} />
+                  <img src={image} alt="" key={i} />
+                </div>
               ))}
             </div>
           )}
