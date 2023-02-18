@@ -3,6 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { Unsend } from "./Unsend";
 import { MdDownloadForOffline } from "react-icons/md";
+import fileDownload from "js-file-download";
 
 const Message = ({ message, index }) => {
   const { currentUser } = useContext(AuthContext);
@@ -14,17 +15,6 @@ const Message = ({ message, index }) => {
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   });
-
-  const downloadFile = (url, filename = "aaaaaaa") => {
-    // This can be downloaded directly:
-    const xhr = new XMLHttpRequest();
-    xhr.responseType = "blob";
-    xhr.onload = (event) => {
-      const blob = xhr.response;
-    };
-    xhr.open("GET", url);
-    xhr.send();
-  };
 
   //Check if user can unsend a message
   const checkUserCanUnsend = (message) => {
@@ -41,6 +31,19 @@ const Message = ({ message, index }) => {
     }
     return false;
   };
+
+  // Function to download a file from a URL
+  function downloadFile(url) {
+    // Use the download URL to download the file
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "blob";
+    xhr.onload = function (event) {
+      var blob = xhr.response;
+      // Do something with the downloaded file
+    };
+    xhr.open("GET", url);
+    xhr.send();
+  }
 
   return (
     <div
@@ -84,8 +87,10 @@ const Message = ({ message, index }) => {
             <div className="images">
               {message.imageUrls.map((image, i) => (
                 <div key={i}>
-                  <MdDownloadForOffline onClick={() => downloadFile(image)} />
-                  <img src={image} alt="" key={i} />
+                  <MdDownloadForOffline
+                    onClick={() => downloadFile(image.downloadURL)}
+                  />
+                  <img src={image.downloadURL} alt="" key={i} />
                 </div>
               ))}
             </div>

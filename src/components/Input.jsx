@@ -28,7 +28,7 @@ const Input = () => {
 
   const { currentUser } = useContext(AuthContext);
   const { data, dispatch } = useContext(ChatContext);
-
+  
   //Upload images and store images to the imageUrls
   const uploadFiles = async (files, attachments) => {
     const promises = [];
@@ -37,6 +37,7 @@ const Input = () => {
       const id = uuid();
       const storageRef = ref(storage, id);
       const uploadTask = uploadBytesResumable(storageRef, file);
+      const filename = file.name;
 
       const promise = new Promise((resolve, reject) => {
         uploadTask.on(
@@ -57,7 +58,7 @@ const Input = () => {
                 if (attachments) {
                   resolve({ filename: filenames[index], url: downloadURL });
                 } else {
-                  resolve(downloadURL);
+                  resolve({downloadURL, filename});
                 }
               }
             );
