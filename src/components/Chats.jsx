@@ -69,7 +69,7 @@ const Chats = () => {
                       </div>
                     )}
                   </div>
-                  <p>{chat[1].lastMessage?.text}</p>
+                  <p>{chat[1].lastMessage?.text?.substring(0, 20)}</p>
                 </div>
               </div>
             )}
