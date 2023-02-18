@@ -73,6 +73,19 @@ const Search = () => {
           chatId: chat.chatId,
         });
         setUsername("");
+      } else {
+        console.log("No chat found with uid:", user.uid);
+        const combinedID = uuid();
+        dispatch({
+          type: "CHANGE_USER",
+          payload: {
+            uid: user.uid,
+            userName: user.userName,
+            photoURL: user.photoURL,
+          },
+          chatId: combinedID,
+        });
+        setUsername("");
       }
     } else {
       console.log("No chat found with uid:", user.uid);

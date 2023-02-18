@@ -7,8 +7,20 @@ import { doc, setDoc } from "firebase/firestore";
 
 export const Register = () => {
   const [err, setErr] = useState(false);
+  const [imageURL, setImageURL] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setImageURL(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   //Submit user data and register
   const handleSubmit = async (e) => {
@@ -48,7 +60,7 @@ export const Register = () => {
             });
 
             //create empty user chats on firestore
-            await setDoc(doc(db, "userChats", res.user.uid), {})
+            await setDoc(doc(db, "userChats", res.user.uid), {});
 
             navigate("/");
           } catch (error) {
@@ -71,9 +83,14 @@ export const Register = () => {
           <input type="text" placeholder="username" />
           <input type="email" placeholder="email" />
           <input type="password" placeholder="password" />
-          <input style={{ display: "none" }} type="file" id="file" />
+          <input
+            style={{ display: "none" }}
+            type="file"
+            id="file"
+            onChange={handleImageChange}
+          />
           <label htmlFor="file">
-            <img src="/add-image.png" />
+            <img src={imageURL ? imageURL : "/add-image.png"} />
             <span>Add an avatar</span>
           </label>
           <button disabled={loading}>Sign up</button>
