@@ -3,6 +3,7 @@ import { MdAttachment, MdSend } from "react-icons/md";
 import { BsImageFill } from "react-icons/bs";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
+import { SearchContext } from "../context/SearchContext";
 import {
   arrayUnion,
   doc,
@@ -28,7 +29,8 @@ const Input = () => {
 
   const { currentUser } = useContext(AuthContext);
   const { data, dispatch } = useContext(ChatContext);
-  
+  const { dispatchSearch } = useContext(SearchContext);
+
   //Upload images and store images to the imageUrls
   const uploadFiles = async (files, attachments) => {
     const promises = [];
@@ -58,7 +60,7 @@ const Input = () => {
                 if (attachments) {
                   resolve({ filename: filenames[index], url: downloadURL });
                 } else {
-                  resolve({downloadURL, filename});
+                  resolve({ downloadURL, filename });
                 }
               }
             );
@@ -101,6 +103,10 @@ const Input = () => {
       setText("");
       setImages([]);
       setFiles([]);
+      dispatchSearch({
+        type: "CHANGE_TEXT",
+        payload: "",
+      });
     } else {
       toast.error("Please select an user to send message!");
     }
@@ -185,7 +191,8 @@ const Input = () => {
       //Update current user's userChats last message
       await updateDoc(doc(db, "userChats", currentUser.uid), {
         [data.chatId + ".lastMessage"]: {
-          text,
+          text:
+            text.length > 0 ? text : images.length ? "(Image)" : "(Attachment)",
         },
         [data.chatId + ".removed"]: false,
         [data.chatId + ".date"]: serverTimestamp(),
@@ -197,7 +204,8 @@ const Input = () => {
       //Update user's userChats last message
       await updateDoc(doc(db, "userChats", data.user.uid), {
         [data.chatId + ".lastMessage"]: {
-          text,
+          text:
+            text.length > 0 ? text : images.length ? "(Image)" : "(Attachment)",
         },
         [data.chatId + ".removed"]: false,
         [data.chatId + ".date"]: serverTimestamp(),

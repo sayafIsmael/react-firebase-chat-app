@@ -253,8 +253,21 @@
             box-shadow: 3px 4px 5px 0px rgba(0, 0, 0, 0.1);
             -webkit-box-shadow: 3px 4px 5px 0px rgba(0, 0, 0, 0.1);
             -moz-box-shadow: 3px 4px 5px 0px rgba(0, 0, 0, 0.1);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            
+            svg {
+              width: 25px;
+              height: 25px;
+              right: 10px;
+              top: 28%;
+              cursor: pointer;
+            }
           }
-          
+
           .images {
             display: flex;
             border-radius: 20px;
@@ -298,6 +311,17 @@
               background-color: #3361ff;
               color: white;
               border-radius: 10px 0px 10px 10px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 10px;
+              svg {
+                width: 25px;
+                height: 25px;
+                right: 10px;
+                top: 28%;
+                cursor: pointer;
+              }
             }
             a {
               color: white;

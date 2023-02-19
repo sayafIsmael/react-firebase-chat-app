@@ -3,7 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { Unsend } from "./Unsend";
 import { MdDownloadForOffline } from "react-icons/md";
-import fileDownload from "js-file-download";
+import axios from "axios";
 
 const Message = ({ message, index }) => {
   const { currentUser } = useContext(AuthContext);
@@ -32,17 +32,28 @@ const Message = ({ message, index }) => {
     return false;
   };
 
-  // Function to download a file from a URL
-  function downloadFile(url) {
-    // Use the download URL to download the file
-    var xhr = new XMLHttpRequest();
-    xhr.responseType = "blob";
-    xhr.onload = function (event) {
-      var blob = xhr.response;
-      // Do something with the downloaded file
-    };
-    xhr.open("GET", url);
-    xhr.send();
+  // Function to download a file from a URL (as described in my previous answer)
+  function downloadFile(url, filename) {
+    axios({
+      method: "get",
+      url: url,
+      responseType: "blob",
+    })
+      .then((response) => {
+        // Handle the downloaded file
+        const file = new File([response.data], filename);
+
+        // Create a download link
+        const downloadLink = document.createElement("a");
+        downloadLink.href = URL.createObjectURL(file);
+        downloadLink.download = file.name;
+
+        // Simulate a click on the download link
+        downloadLink.click();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   return (
@@ -88,7 +99,9 @@ const Message = ({ message, index }) => {
               {message.imageUrls.map((image, i) => (
                 <div key={i}>
                   <MdDownloadForOffline
-                    onClick={() => downloadFile(image.downloadURL)}
+                    onClick={() =>
+                      downloadFile(image.downloadURL, image.filename)
+                    }
                   />
                   <img src={image.downloadURL} alt="" key={i} />
                 </div>
@@ -102,6 +115,11 @@ const Message = ({ message, index }) => {
                   <a href={file.url} target="_blank">
                     {file.filename}
                   </a>
+                  <span>
+                    <MdDownloadForOffline
+                      onClick={() => downloadFile(file.url, file.filename)}
+                    />
+                  </span>
                 </p>
               ))}
             </div>

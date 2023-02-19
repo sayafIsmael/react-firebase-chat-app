@@ -26,11 +26,31 @@ export const Unsend = ({ canUnsend, index }) => {
     };
   }, []);
 
+  const getLastMessage = (message) => {
+    if (message) {
+      if (message.hasOwnProperty("text") && message.text.length > 0)
+        return message.text;
+      if (message.hasOwnProperty("imageUrls")) return "(Image)";
+      if (message.hasOwnProperty("filesUrls")) return "(Attachment)";
+    }
+    return "";
+  };
+
+  const getLastMessageIndex = (startIndex, messages) => {
+    const messagesBeforeStartIndex = messages.slice(0, startIndex).reverse();
+    const lastIndex = messagesBeforeStartIndex.findIndex((message) => {
+      return !message.hasOwnProperty("unsend") || !message.unsend;
+    });
+    if (lastIndex === -1) {
+      return -1;
+    }
+    return messages.length - lastIndex - 2;
+  };
+
   const unsendMessage = async () => {
     const res = await getDoc(doc(db, "chats", data.chatId));
     const messages = res.data().messages;
     messages[index] = { ...messages[index], unsend: true };
-    console.log("messages: ", messages);
 
     await updateDoc(doc(db, "chats", data.chatId), {
       messages: messages,
@@ -40,7 +60,11 @@ export const Unsend = ({ canUnsend, index }) => {
       await updateDoc(
         doc(db, "userChats", currentUser.uid),
         {
-          [data.chatId + ".lastMessage"]: { text: "removed" },
+          [data.chatId + ".lastMessage"]: {
+            text: getLastMessage(
+              messages[getLastMessageIndex(index, messages)]
+            ),
+          },
         },
         { merge: true }
       );
@@ -48,7 +72,11 @@ export const Unsend = ({ canUnsend, index }) => {
       await updateDoc(
         doc(db, "userChats", data.user.uid),
         {
-          [data.chatId + ".lastMessage"]: { text: "removed" },
+          [data.chatId + ".lastMessage"]: {
+            text: getLastMessage(
+              messages[getLastMessageIndex(index, messages)]
+            ),
+          },
         },
         { merge: true }
       );

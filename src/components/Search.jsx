@@ -14,15 +14,17 @@ import { db } from "./../config/firebase";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { v4 as uuid } from "uuid";
+import { SearchContext } from "../context/SearchContext";
 
 const Search = () => {
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
   const [user, setUser] = useState([]);
   const [users, setUsers] = useState([]);
   const [err, setErr] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
+  const { username, dispatchSearch } = useContext(SearchContext);
 
   //Search user from users collection
   const handleSearch = async () => {
@@ -72,7 +74,7 @@ const Search = () => {
           },
           chatId: chat.chatId,
         });
-        setUsername("");
+        // setUsername("");
       } else {
         console.log("No chat found with uid:", user.uid);
         const combinedID = uuid();
@@ -85,7 +87,7 @@ const Search = () => {
           },
           chatId: combinedID,
         });
-        setUsername("");
+        // setUsername("");
       }
     } else {
       console.log("No chat found with uid:", user.uid);
@@ -99,7 +101,7 @@ const Search = () => {
         },
         chatId: combinedID,
       });
-      setUsername("");
+      // setUsername("");
     }
   };
 
@@ -116,7 +118,10 @@ const Search = () => {
           placeholder="Search..."
           onKeyDown={handleKey}
           onChange={(e) => {
-            setUsername(e.target.value);
+            dispatchSearch({
+              type: "CHANGE_TEXT",
+              payload: e.target.value,
+            });
             handleSearch();
           }}
           value={username}
