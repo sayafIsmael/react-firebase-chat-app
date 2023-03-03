@@ -24,8 +24,8 @@ const Chats = () => {
       });
     };
 
-    currentUser.uid && getChats();
-  }, [currentUser.uid]);
+    currentUser && currentUser.uid && getChats();
+  }, [currentUser]);
 
   const handleSelect = (u, i, lastRemovedDate) => {
     console.log("Chat Id:", i);

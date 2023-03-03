@@ -8,11 +8,10 @@ const Auth = (WrappedComponent) => {
     const { currentUser } = useContext(AuthContext);
 
     useEffect(() => {
-      console.log("auth current user: ", Object.keys(currentUser).length);
-      if (!currentUser || Object.keys(currentUser).length == 0) {
+      if (!currentUser) {
         router.push("/login");
       }
-    }, [currentUser]);
+    }, []);
 
     return <WrappedComponent {...props} />;
   };

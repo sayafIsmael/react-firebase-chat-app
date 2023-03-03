@@ -14,10 +14,10 @@ const Navbar = () => {
 
   return (
     <div className="navbar">
-      <span>Chat app</span>
+      <span>App</span>
       <div className="user">
-        <img src={currentUser.photoURL} alt="" />
-        <span>{currentUser.displayName}</span>
+        <img src={currentUser?.photoURL} alt="" />
+        <span>{currentUser?.displayName}</span>
         <button onClick={() => {
           signOut(auth);
           dispatch({
@@ -26,7 +26,6 @@ const Navbar = () => {
             chatId: "null",
           });
           router.push("/login")
-          window.location.reload()
           }}>Logout</button>
       </div>
     </div>

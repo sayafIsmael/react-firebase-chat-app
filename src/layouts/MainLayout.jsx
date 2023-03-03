@@ -1,4 +1,5 @@
 import * as React from "react";
+import Navbar from "@/components/Navbar";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -15,41 +16,54 @@ import MailIcon from "@mui/icons-material/Mail";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import { useRouter } from "next/router";
 
 const drawerWidth = 240;
 
-export default function MainLayout({ props }) {
+export default function MainLayout({ children }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const router = useRouter();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const routes = [
+    {
+      name: "Chat",
+      link: "/",
+      icon: <MailIcon />,
+    },
+    {
+      name: "Boards",
+      link: "/boards",
+      icon: <DashboardIcon />,
+    },
+    {
+      name: "Leaderborad",
+      link: "/leaderboard",
+      icon: <LeaderboardIcon />,
+    },
+  ];
+
   const drawer = (
     <div>
-      <Toolbar />
+      <Toolbar sx={{ p: "0px !important" }}>
+        <Navbar />
+      </Toolbar>
       <Divider />
       <List>
-        {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-          <ListItem key={text} disablePadding>
+        {routes.map((route, index) => (
+          <ListItem
+            key={index}
+            disablePadding
+            onClick={() => router.push(route.link)}
+          >
             <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {["All mail", "Trash", "Spam"].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
+              <ListItemIcon>{route.icon}</ListItemIcon>
+              <ListItemText primary={route.name} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -80,9 +94,9 @@ export default function MainLayout({ props }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Responsive drawer
-          </Typography>
+          {/* <Typography variant="h6" noWrap component="div">
+            Firebase Chat App
+          </Typography> */}
         </Toolbar>
       </AppBar>
       <Box
@@ -126,41 +140,11 @@ export default function MainLayout({ props }) {
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
-          p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
         }}
       >
         <Toolbar />
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Rhoncus
-          dolor purus non enim praesent elementum facilisis leo vel. Risus at
-          ultrices mi tempus imperdiet. Semper risus in hendrerit gravida rutrum
-          quisque non tellus. Convallis convallis tellus id interdum velit
-          laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed
-          adipiscing. Amet nisl suscipit adipiscing bibendum est ultricies
-          integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate
-          eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo
-          quis imperdiet massa tincidunt. Cras tincidunt lobortis feugiat
-          vivamus at augue. At augue eget arcu dictum varius duis at consectetur
-          lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa sapien
-          faucibus et molestie ac.
-        </Typography>
-        <Typography paragraph>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-          ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-          elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse
-          sed nisi lacus sed viverra tellus. Purus sit amet volutpat consequat
-          mauris. Elementum eu facilisis sed odio morbi. Euismod lacinia at quis
-          risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas
-          purus viverra accumsan in. In hendrerit gravida rutrum quisque non
-          tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-          morbi tristique senectus et. Adipiscing elit duis tristique
-          sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-          eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-          posuere sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
+        {children}
       </Box>
     </Box>
   );
