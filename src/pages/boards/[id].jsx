@@ -5,6 +5,8 @@ import MainLayout from "@/layouts/MainLayout";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import {modalStyle} from "@/styles/mui"
+
 // import Grid from "@mui/material/Grid";
 import {
   DndContext,
@@ -106,17 +108,6 @@ export default function BoardDetails({ board }) {
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
   }, []);
-
-  const modalStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    boxShadow: 24,
-    p: 4,
-  };
 
   return (
     <MainLayout>
