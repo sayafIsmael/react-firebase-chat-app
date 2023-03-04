@@ -1,4 +1,5 @@
 import "@/styles/App.scss";
+import '@/styles/globals.css'
 import { AuthContextProvider } from "../context/AuthContext";
 import { ChatContextProvider } from "../context/ChatContext";
 import { SearchContextProvider } from "../context/SearchContext";
