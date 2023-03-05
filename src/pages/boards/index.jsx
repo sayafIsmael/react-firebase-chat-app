@@ -112,7 +112,7 @@ function Boards() {
         <div className="flex justify-between">
           <h1>Board</h1>
           <Button variant="contained" onClick={() => setModalOpen(true)}>
-            Create
+            Add New
           </Button>
         </div>
         <Box sx={{ flexGrow: 1, py: 2 }}>
