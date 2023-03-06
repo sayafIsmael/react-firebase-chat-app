@@ -11,6 +11,7 @@ import {
   getDoc,
   field,
   query,
+  serverTimestamp
 } from "firebase/firestore";
 import { v4 as uuid } from "uuid";
 import { uploadFiles } from "./files.service";
