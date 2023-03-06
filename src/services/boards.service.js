@@ -6,6 +6,11 @@ import {
   addDoc,
   getDocs,
   onSnapshot,
+  serverTimestamp,
+  where,
+  getDoc,
+  field,
+  query,
 } from "firebase/firestore";
 import { v4 as uuid } from "uuid";
 
@@ -35,6 +40,7 @@ export function createBoard({
               sets: [],
               reviews: [],
               userId,
+              createdAt: serverTimestamp()
             });
 
             resolve({ success: true });
@@ -53,6 +59,18 @@ export async function getAllBoards(callback) {
   const query = collection(db, "boards");
   const unsubscribe = onSnapshot(query, (querySnapshot) => {
     const documents = querySnapshot.docs.map((doc) => doc.data());
+    callback(documents);
+  });
+  return unsubscribe;
+}
+
+export async function getAllBoardsName(callback) {
+  const query = collection(db, "boards");
+  const unsubscribe = onSnapshot(query, (querySnapshot) => {
+    const documents = querySnapshot.docs.map((doc) => {
+      const { id, name } = doc.data();
+      return { id, name };
+    });
     callback(documents);
   });
   return unsubscribe;

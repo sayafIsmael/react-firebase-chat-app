@@ -18,6 +18,7 @@ import { getAllBoards, createBoard } from "@/services/boards.service";
 import SaveIcon from "@mui/icons-material/Save";
 import { AuthContext } from "@/context/AuthContext";
 import { toast } from "react-toastify";
+import AddIcon from "@mui/icons-material/Add";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -111,7 +112,12 @@ function Boards() {
       <div className="page-content">
         <div className="flex justify-between">
           <h1>Board</h1>
-          <Button variant="contained" onClick={() => setModalOpen(true)}>
+          <Button
+            variant="contained"
+            className="gap-2"
+            onClick={() => setModalOpen(true)}
+          >
+            <AddIcon />
             Add New
           </Button>
         </div>
@@ -120,12 +126,16 @@ function Boards() {
             {[...boards].map((item, i) => (
               <Grid item xs={3} key={item.id}>
                 <Item
-                  className="cursor-pointer"
+                  className="cursor-pointer flex justify-center flex-col"
                   onClick={() => router.push(`/boards/${item.id}`)}
                 >
-                  <img className="w-100 bg-cover mb-2" src={item.thumbnail} />
+                  <img
+                    className="h-44 w-auto bg-cover mb-2"
+                    src={item.thumbnail}
+                    style={{ height: 200 }}
+                  />
                   <h4>{item.name}</h4>
-                  <p>{item.description}</p>
+                  <p>{item.description.substr(0, 50) + (item.description.length > 50 ? "..." : "")}</p>
                   <p>User reviews: {item.reviews.length}</p>
                 </Item>
               </Grid>
@@ -139,6 +149,7 @@ function Boards() {
             aria-describedby="modal-modal-description"
           >
             <Box sx={modalStyle}>
+              <h4>Add new board</h4>
               <TextField
                 required
                 id="name"
@@ -163,7 +174,7 @@ function Boards() {
                 base64={true}
                 handleFiles={handleFiles}
               >
-                <div>
+                <div className="cursor-pointer">
                   {url && <img src={url} className="w-100 mb-3" />}
                   {!url && (
                     <div className="flex mb-3 justify-between w-100">

@@ -19,6 +19,7 @@ import Typography from "@mui/material/Typography";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { useRouter } from "next/router";
+import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 
 const drawerWidth = 240;
 
@@ -46,6 +47,11 @@ export default function MainLayout({ children }) {
       link: "/leaderboard",
       icon: <LeaderboardIcon />,
     },
+    {
+      name: "Sets",
+      link: "/sets",
+      icon: <DashboardCustomizeIcon />,
+    },
   ];
 
   const drawer = (
@@ -60,6 +66,7 @@ export default function MainLayout({ children }) {
             key={index}
             disablePadding
             onClick={() => router.push(route.link)}
+            className={router.asPath === route.link ? "bg-gray-100" : ""}
           >
             <ListItemButton>
               <ListItemIcon>{route.icon}</ListItemIcon>

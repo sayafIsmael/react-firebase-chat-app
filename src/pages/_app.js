@@ -1,5 +1,7 @@
 import "@/styles/App.scss";
 import "@/styles/globals.css";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import { AuthContextProvider } from "../context/AuthContext";
 import { ChatContextProvider } from "../context/ChatContext";
 import { SearchContextProvider } from "../context/SearchContext";
