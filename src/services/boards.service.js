@@ -40,7 +40,7 @@ export function createBoard({
               sets: [],
               reviews: [],
               userId,
-              createdAt: serverTimestamp()
+              createdAt: serverTimestamp(),
             });
 
             resolve({ success: true });
@@ -73,5 +73,32 @@ export async function getAllBoardsName(callback) {
     });
     callback(documents);
   });
+  return unsubscribe;
+}
+
+export async function getBoardDetails(boardId, callback) {
+  const setsRef = collection(db, "sets");
+
+  const boardsRef = collection(db, "boards");
+  const boardQuery = query(boardsRef, where("id", "==", boardId));
+
+  // listen for updates to the board document with id == boardId
+  const unsubscribe = onSnapshot(boardQuery, (boardSnapshot) => {
+    const board = boardSnapshot.docs[0].data();
+
+    const setsQuery = query(
+      setsRef,
+      where("boards", "array-contains", { id: boardId, name: board.name })
+    );
+
+    onSnapshot(setsQuery, (setsSnapshot) => {
+      const sets = setsSnapshot.docs.map((doc) => doc.data());
+      // return the sets and the board with id boardId
+      const response = { sets, board };
+      // console.log(response);
+      callback(response);
+    });
+  });
+
   return unsubscribe;
 }

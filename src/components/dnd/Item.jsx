@@ -6,7 +6,7 @@ const Item = forwardRef(
       opacity: withOpacity ? "0.5" : "1",
       transformOrigin: "50% 50%",
       height: "140px",
-      width: "140px",
+      width: "200px",
       borderRadius: "10px",
       cursor: isDragging ? "grabbing" : "grab",
       backgroundColor: "#ffffff",
@@ -22,7 +22,14 @@ const Item = forwardRef(
 
     return (
       <div ref={ref} style={inlineStyles} {...props}>
-        {data && <img src={data.thumbnail} />}
+        {data && data.images && <img src={data?.images[0]?.downloadURL} />}
+        {data && data.video && (
+          <video width="640" height="360" controls className="h-44 w-auto">
+            <source src={data?.video.downloadURL} type="video/mp4" />
+            <source src={data?.video.downloadURL} type="video/webm" />
+            <source src={data?.video.downloadURL} type="video/avi" />
+          </video>
+        )}
       </div>
     );
   }

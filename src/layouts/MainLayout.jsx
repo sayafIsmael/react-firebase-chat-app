@@ -20,6 +20,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { useRouter } from "next/router";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
+import PersonIcon from "@mui/icons-material/Person";
 
 const drawerWidth = 240;
 
@@ -38,19 +39,26 @@ export default function MainLayout({ children }) {
       icon: <MailIcon />,
     },
     {
-      name: "Boards",
-      link: "/boards",
-      icon: <DashboardIcon />,
-    },
-    {
       name: "Leaderborad",
       link: "/leaderboard",
       icon: <LeaderboardIcon />,
     },
     {
-      name: "Sets",
-      link: "/sets",
-      icon: <DashboardCustomizeIcon />,
+      name: "User",
+      link: "/user",
+      icon: <PersonIcon />,
+      subItems: [
+        {
+          name: "Boards",
+          link: "/user/boards",
+          icon: <DashboardIcon />,
+        },
+        {
+          name: "Sets",
+          link: "/user/sets",
+          icon: <DashboardCustomizeIcon />,
+        },
+      ],
     },
   ];
 
@@ -62,17 +70,40 @@ export default function MainLayout({ children }) {
       <Divider />
       <List>
         {routes.map((route, index) => (
-          <ListItem
-            key={index}
-            disablePadding
-            onClick={() => router.push(route.link)}
-            className={router.asPath === route.link ? "bg-gray-100" : ""}
-          >
-            <ListItemButton>
-              <ListItemIcon>{route.icon}</ListItemIcon>
-              <ListItemText primary={route.name} />
-            </ListItemButton>
-          </ListItem>
+          <div key={index}>
+            <ListItem
+              key={index + 123544}
+              disablePadding
+              onClick={() => router.push(route.link)}
+              className={router.asPath === route.link ? "bg-gray-100" : ""}
+            >
+              <ListItemButton>
+                <ListItemIcon>{route.icon}</ListItemIcon>
+                <ListItemText primary={route.name} />
+              </ListItemButton>
+            </ListItem>
+            {route.subItems?.map((subRoute, i) => (
+              <ListItem
+                key={i}
+                disablePadding
+                onClick={() => router.push(route.link)}
+                className={`pl-5 ${
+                  router.asPath === subRoute.link ? "bg-gray-100" : ""
+                }`}
+              >
+                <ListItemButton
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push(subRoute.link);
+                  }}
+                >
+                  <ListItemIcon>{subRoute.icon}</ListItemIcon>
+                  <ListItemText primary={subRoute.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </div>
         ))}
       </List>
     </div>

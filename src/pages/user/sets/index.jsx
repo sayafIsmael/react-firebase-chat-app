@@ -179,7 +179,7 @@ function Sets() {
                   <h4 className="text-black my-2">{item.name}</h4>
                   <p>{item.description}</p>
                   <div className="flex justify-center gap-2">
-                    {item.boards.map((board, i)=> <span onClick={()=> router.push(`/boards/${board.id}`)} className="bg-gray-200 p-2 rounded" key={i}>{board.name}</span>)}
+                    {item.boards.map((board, i)=> <span onClick={()=> router.push(`/user/boards/${board.id}`)} className="bg-gray-200 p-2 rounded" key={i}>{board.name}</span>)}
                   </div>
                 </Item>
               </Grid>

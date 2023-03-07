@@ -127,7 +127,7 @@ function Boards() {
               <Grid item xs={3} key={item.id}>
                 <Item
                   className="cursor-pointer flex justify-center flex-col"
-                  onClick={() => router.push(`/boards/${item.id}`)}
+                  onClick={() => router.push(`/user/boards/${item.id}`)}
                 >
                   <img
                     className="h-44 w-auto bg-cover mb-2"
