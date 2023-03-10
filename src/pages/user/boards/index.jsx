@@ -44,14 +44,10 @@ function Boards() {
   const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
-    const unSub = () =>
-      getAllBoards((documents) => {
-        setBoards(documents);
-        console.log(documents);
-      });
-    return () => {
-      unSub();
-    };
+    getAllBoards((documents) => {
+      setBoards(documents);
+      console.log("boards",documents);
+    });
   }, []);
 
   function addPosition() {

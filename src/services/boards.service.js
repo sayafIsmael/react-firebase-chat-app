@@ -10,7 +10,11 @@ import {
   where,
   getDoc,
   field,
+  setDoc,
   query,
+  updateDoc,
+  increment,
+  writeBatch,
 } from "firebase/firestore";
 import { v4 as uuid } from "uuid";
 
@@ -101,4 +105,58 @@ export async function getBoardDetails(boardId, callback) {
   });
 
   return unsubscribe;
+}
+
+export function createReview(data) {
+  return new Promise(async (resolve, reject) => {
+    const { boardId, userId, sets, leaderboardData } = data;
+
+    const reviewsCollection = collection(db, "reviews");
+    const reviewsRef = doc(reviewsCollection, userId);
+    const existingReview = await getDoc(reviewsRef);
+
+    const leaderboardRef = doc(collection(db, "leaderBoards"), boardId);
+    const existingLeaderBoard = await getDoc(leaderboardRef);
+
+    try {
+      if (!existingReview.exists()) {
+        //Add Review
+        await setDoc(
+          reviewsRef,
+          {
+            [boardId]: sets,
+          },
+          { merge: true }
+        );
+
+        // Update or create the document
+        if (existingLeaderBoard.exists()) {
+          const batch = writeBatch(db);
+
+          leaderboardData.forEach((item) => {
+            const { id, point } = item;
+            const leaderboardDocField = `${id}.point`;
+            const pointIncrement = increment(point);
+            batch.update(leaderboardRef, {
+              [leaderboardDocField]: pointIncrement,
+            });
+          });
+          await batch.commit();
+        } else {
+          const data = {};
+          leaderboardData.forEach((item) => {
+            data[item.id] = item; // Store the item with the ID as the key in the leaderboardData object
+          });
+          await setDoc(leaderboardRef, data, { merge: true });
+        }
+
+        resolve({ success: true });
+      } else {
+        reject({ error: "Review already submitted" });
+      }
+    } catch (error) {
+      reject({ error: "Something went wrong" });
+      console.log("error", error);
+    }
+  });
 }

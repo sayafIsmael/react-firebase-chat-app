@@ -6,8 +6,10 @@ import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import { modalStyle } from "@/styles/mui";
-import { getBoardDetails } from "@/services/boards.service";
+import { getBoardDetails, createReview } from "@/services/boards.service";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import { AuthContext } from "@/context/AuthContext";
 
 // import Grid from "@mui/material/Grid";
 import {
@@ -34,9 +36,9 @@ import Modal from "@mui/material/Modal";
 
 export default function BoardDetails() {
   const router = useRouter();
-
+  const { currentUser } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
   const [modalopen, setModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState({});
   const [modalItem, setModalItem] = useState({});
   const [board, setBoard] = useState({
     name: "",
@@ -48,27 +50,12 @@ export default function BoardDetails() {
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
   const { id } = router.query;
 
-  // useEffect(() => {
-  //   const unSub = () =>
-  //     getAllBoards((documents) => {
-  //       setBoards(documents);
-  //       console.log(documents);
-  //     });
-  //   return () => {
-  //     unSub();
-  //   };
-  // }, []);
-
   useEffect(() => {
-    const unSub = () =>
-      getBoardDetails(id, (documents) => {
-        setItems(documents?.sets || []);
-        setBoard(documents?.board);
-        console.log("board details", documents);
-      });
-    return () => {
-      unSub();
-    };
+    getBoardDetails(id, (documents) => {
+      setItems(documents?.sets || []);
+      setBoard(documents?.board);
+      console.log("board details", documents);
+    });
   }, []);
 
   const handleDragStart = useCallback((event) => {
@@ -93,6 +80,33 @@ export default function BoardDetails() {
     setActiveId(null);
   }, []);
 
+  const handleSubmitReview = async () => {
+    const { defaultPositions, id } = board;
+    const sets = [...items];
+    const leaderboardSets = [];
+
+    sets.map((set, index) => {
+      leaderboardSets.push({
+        point: defaultPositions[index] || 0,
+        ...set,
+      });
+    });
+
+    const data = {
+      boardId: id, 
+      userId: currentUser.uid, 
+      sets,
+      leaderboardData: leaderboardSets,
+    };
+
+    try {
+      await createReview(data);
+      toast.success("Review submitted successfully!");
+    } catch ({error}) {
+      toast.error(error);
+    }
+  };
+
   return (
     <MainLayout>
       <Head>
@@ -100,8 +114,19 @@ export default function BoardDetails() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="page-content">
-        <h4>{board.name}</h4>
-        <p> {board.description}</p>
+        <div className="flex justify-between">
+          <div>
+            <h4>{board.name}</h4>
+            <p> {board.description}</p>
+          </div>
+          <Button
+            variant="contained"
+            className="h-10"
+            onClick={handleSubmitReview}
+          >
+            Submit Review
+          </Button>
+        </div>
         <Box sx={{ flexGrow: 1, py: 2 }}>
           <DndContext
             sensors={sensors}
@@ -123,8 +148,10 @@ export default function BoardDetails() {
                   id={activeId}
                   isDragging
                   onClick={() => {
-                    setModalItem(items[items.findIndex((item) => item.id == activeId)])
-                    setModalOpen(true)
+                    setModalItem(
+                      items[items.findIndex((item) => item.id == activeId)]
+                    );
+                    setModalOpen(true);
                   }}
                 />
               ) : null}
@@ -140,7 +167,10 @@ export default function BoardDetails() {
             <Box sx={modalStyle}>
               <div className="mb-2">
                 {modalItem && modalItem.images && (
-                  <img className="w-100" src={modalItem?.images[0]?.downloadURL} />
+                  <img
+                    className="w-100"
+                    src={modalItem?.images[0]?.downloadURL}
+                  />
                 )}
                 {modalItem && modalItem.video && (
                   <video

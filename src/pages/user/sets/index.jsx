@@ -53,25 +53,17 @@ function Sets() {
 
   useEffect(() => {
     const userId = currentUser.uid;
-    const unSub = () =>
-      getAllSets(userId, (documents) => {
-        setSets(documents);
-        console.log("sets", documents);
-      });
-    return () => {
-      unSub();
-    };
+    getAllSets(userId, (documents) => {
+      setSets(documents);
+      console.log("sets", documents);
+    });
   }, []);
 
   useEffect(() => {
-    const unSub = () =>
-      getAllBoardsName((documents) => {
-        setBoardNames(documents);
-        console.log("board names", documents);
-      });
-    return () => {
-      unSub();
-    };
+    getAllBoardsName((documents) => {
+      setBoardNames(documents);
+      console.log("board names", documents);
+    });
   }, []);
 
   const handleImageUrls = (files) => {
@@ -165,12 +157,21 @@ function Sets() {
                   {item?.images && (
                     <Slider {...sliderSettings}>
                       {item?.images.map((image, i) => (
-                        <img key={i} src={image.downloadURL}  className="h-44 w-auto"/>
+                        <img
+                          key={i}
+                          src={image.downloadURL}
+                          className="h-44 w-auto"
+                        />
                       ))}
                     </Slider>
                   )}
                   {item?.video && (
-                    <video width="640" height="360" controls className="h-44 w-auto">
+                    <video
+                      width="640"
+                      height="360"
+                      controls
+                      className="h-44 w-auto"
+                    >
                       <source src={item?.video.downloadURL} type="video/mp4" />
                       <source src={item?.video.downloadURL} type="video/webm" />
                       <source src={item?.video.downloadURL} type="video/avi" />
@@ -179,7 +180,15 @@ function Sets() {
                   <h4 className="text-black my-2">{item.name}</h4>
                   <p>{item.description}</p>
                   <div className="flex justify-center gap-2">
-                    {item.boards.map((board, i)=> <span onClick={()=> router.push(`/user/boards/${board.id}`)} className="bg-gray-200 p-2 rounded" key={i}>{board.name}</span>)}
+                    {item.boards.map((board, i) => (
+                      <span
+                        onClick={() => router.push(`/user/boards/${board.id}`)}
+                        className="bg-gray-200 p-2 rounded"
+                        key={i}
+                      >
+                        {board.name}
+                      </span>
+                    ))}
                   </div>
                 </Item>
               </Grid>
