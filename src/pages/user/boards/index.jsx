@@ -14,7 +14,7 @@ import { modalStyle } from "@/styles/mui";
 import TextField from "@mui/material/TextField";
 import { FiCamera } from "react-icons/fi";
 import ReactFileReader from "react-file-reader";
-import { getAllBoards, createBoard } from "@/services/boards.service";
+import { getAllBoardsByUserId, createBoard } from "@/services/boards.service";
 import SaveIcon from "@mui/icons-material/Save";
 import { AuthContext } from "@/context/AuthContext";
 import { toast } from "react-toastify";
@@ -44,7 +44,7 @@ function Boards() {
   const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
-    getAllBoards((documents) => {
+    getAllBoardsByUserId(currentUser.uid, (documents) => {
       setBoards(documents);
       console.log("boards",documents);
     });
@@ -132,7 +132,7 @@ function Boards() {
                   />
                   <h4>{item.name}</h4>
                   <p>{item.description.substr(0, 50) + (item.description.length > 50 ? "..." : "")}</p>
-                  <p>User reviews: {item.reviews.length}</p>
+                  {/* <p>User reviews: {item.reviews.length}</p> */}
                 </Item>
               </Grid>
             ))}

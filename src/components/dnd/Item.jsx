@@ -1,16 +1,26 @@
 import React, { forwardRef, HTMLAttributes, CSSProperties } from "react";
+import Set from "@/components/Set";
 
 const Item = forwardRef(
-  ({ id, data, withOpacity, isDragging, style, ...props }, ref) => {
+  (
+    {
+      id,
+      data,
+      withOpacity,
+      isDragging,
+      style,
+      ...props
+    },
+    ref
+  ) => {
     const inlineStyles = {
       opacity: withOpacity ? "0.5" : "1",
-      transformOrigin: "50% 50%",
-      height: "140px",
-      width: "200px",
+      // transformOrigin: "50% 50%",
+      // height: "140px",
+      // width: "200px",
       borderRadius: "10px",
       cursor: isDragging ? "grabbing" : "grab",
       backgroundColor: "#ffffff",
-      display: "flex",
       justifyContent: "center",
       alignItems: "center",
       boxShadow: isDragging
@@ -22,14 +32,7 @@ const Item = forwardRef(
 
     return (
       <div ref={ref} style={inlineStyles} {...props}>
-        {data && data.images && <img src={data?.images[0]?.downloadURL} />}
-        {data && data.video && (
-          <video width="640" height="360" controls className="h-44 w-auto">
-            <source src={data?.video.downloadURL} type="video/mp4" />
-            <source src={data?.video.downloadURL} type="video/webm" />
-            <source src={data?.video.downloadURL} type="video/avi" />
-          </video>
-        )}
+        {data && <Set item={data} showBoards={false} />}
       </div>
     );
   }

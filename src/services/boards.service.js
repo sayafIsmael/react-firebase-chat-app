@@ -15,7 +15,9 @@ import {
   updateDoc,
   increment,
   writeBatch,
+  subcollection,
 } from "firebase/firestore";
+import { FirestoreDataConverter } from "@firebase/util";
 import { v4 as uuid } from "uuid";
 
 export function createBoard({
@@ -26,23 +28,23 @@ export function createBoard({
   userId,
 }) {
   return new Promise(async (resolve, reject) => {
+    const id = uuid();
     const date = new Date().getTime();
     const storageRef = ref(storage, `board-thumbnails${date}`);
-    const myCollectionRef = collection(db, "boards");
+    const myCollectionRef = doc(db, "boards", id);
 
     await uploadBytesResumable(storageRef, thumbnail).then(() => {
       getDownloadURL(storageRef)
         .then(async (downloadURL) => {
           try {
             //Add board
-            await addDoc(myCollectionRef, {
-              id: uuid(),
+            await setDoc(myCollectionRef, {
+              id,
               name,
               description,
               defaultPositions,
               thumbnail: downloadURL,
               sets: [],
-              reviews: [],
               userId,
               createdAt: serverTimestamp(),
             });
@@ -68,6 +70,16 @@ export async function getAllBoards(callback) {
   return unsubscribe;
 }
 
+export async function getAllBoardsByUserId(userId, callback) {
+  const boardRef = collection(db, "boards");
+  const q = query(boardRef, where("userId", "==", userId))
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const documents = querySnapshot.docs.map((doc) => doc.data());
+    callback(documents);
+  });
+  return unsubscribe;
+}
+
 export async function getAllBoardsName(callback) {
   const query = collection(db, "boards");
   const unsubscribe = onSnapshot(query, (querySnapshot) => {
@@ -80,28 +92,38 @@ export async function getAllBoardsName(callback) {
   return unsubscribe;
 }
 
-export async function getBoardDetails(boardId, callback) {
+export async function getBoardDetails(userId, boardId, callback) {
   const setsRef = collection(db, "sets");
 
   const boardsRef = collection(db, "boards");
   const boardQuery = query(boardsRef, where("id", "==", boardId));
 
+  const reviewsRef = doc(db, `reviews/${userId}/boards`, boardId);
+  const existingReview = await getDoc(reviewsRef);
+
   // listen for updates to the board document with id == boardId
   const unsubscribe = onSnapshot(boardQuery, (boardSnapshot) => {
     const board = boardSnapshot.docs[0].data();
 
-    const setsQuery = query(
-      setsRef,
-      where("boards", "array-contains", { id: boardId, name: board.name })
-    );
-
-    onSnapshot(setsQuery, (setsSnapshot) => {
-      const sets = setsSnapshot.docs.map((doc) => doc.data());
-      // return the sets and the board with id boardId
-      const response = { sets, board };
-      // console.log(response);
+    if (existingReview.exists()) {
+      const review = existingReview.data();
+      const sets = review.sets;
+      const response = { sets, board, reviewd: true };
       callback(response);
-    });
+    } else {
+      const setsQuery = query(
+        setsRef,
+        where("boards", "array-contains", { id: boardId, name: board.name })
+      );
+
+      onSnapshot(setsQuery, (setsSnapshot) => {
+        const sets = setsSnapshot.docs.map((doc) => doc.data());
+        // return the sets and the board with id boardId
+        const response = { sets, board, reviewd: false };
+        // console.log(response);
+        callback(response);
+      });
+    }
   });
 
   return unsubscribe;
@@ -111,23 +133,17 @@ export function createReview(data) {
   return new Promise(async (resolve, reject) => {
     const { boardId, userId, sets, leaderboardData } = data;
 
-    const reviewsCollection = collection(db, "reviews");
-    const reviewsRef = doc(reviewsCollection, userId);
+    const reviewsRef = doc(db, `reviews/${userId}/boards`, boardId);
+
     const existingReview = await getDoc(reviewsRef);
 
-    const leaderboardRef = doc(collection(db, "leaderBoards"), boardId);
+    const leaderboardRef = doc(collection(db, "leaderboards"), boardId);
     const existingLeaderBoard = await getDoc(leaderboardRef);
 
     try {
       if (!existingReview.exists()) {
         //Add Review
-        await setDoc(
-          reviewsRef,
-          {
-            [boardId]: sets,
-          },
-          { merge: true }
-        );
+        await setDoc(reviewsRef, { sets });
 
         // Update or create the document
         if (existingLeaderBoard.exists()) {
@@ -159,4 +175,32 @@ export function createReview(data) {
       console.log("error", error);
     }
   });
+}
+
+export async function getLeaderBoardDetails(boardId, callback) {
+  const setsRef = collection(db, "sets");
+
+  const leaderboardRef = collection(db, "leaderboards");
+  const leaderBoardQuery = doc(leaderboardRef, boardId);
+
+  const boardRef = doc(collection(db, "boards"), boardId);
+  const boardData = await getDoc(boardRef);
+
+  // listen for updates to the board document with id == boardId
+  const unsubscribe = onSnapshot(leaderBoardQuery, (leaderboardSnapshot) => {
+    if (leaderboardSnapshot.exists()) {
+      const sets = Object.values(leaderboardSnapshot.data()).sort(
+        (a, b) => b.point - a.point
+      );
+      const response = { sets, board: boardData.data() };
+      console.log("leaderBoards data: ", response);
+      callback(response);
+    } else {
+      const response = { sets: [], board: boardData.data() };
+      console.log("No such document!");
+      callback(response);
+    }
+  });
+
+  return unsubscribe;
 }

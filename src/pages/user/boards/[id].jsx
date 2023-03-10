@@ -10,6 +10,7 @@ import { getBoardDetails, createReview } from "@/services/boards.service";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import { AuthContext } from "@/context/AuthContext";
+import Set from "@/components/Set";
 
 // import Grid from "@mui/material/Grid";
 import {
@@ -33,13 +34,14 @@ import SortableItem from "@/components/dnd/SortableItem";
 import Item from "@/components/dnd/Item";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function BoardDetails() {
   const router = useRouter();
   const { currentUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
-  const [modalopen, setModalOpen] = useState(false);
-  const [modalItem, setModalItem] = useState({});
+  const [reviewd, setReviewd] = useState({});
   const [board, setBoard] = useState({
     name: "",
     description: "",
@@ -51,10 +53,13 @@ export default function BoardDetails() {
   const { id } = router.query;
 
   useEffect(() => {
-    getBoardDetails(id, (documents) => {
+    setLoading(true);
+    getBoardDetails(currentUser.uid, id, (documents) => {
       setItems(documents?.sets || []);
       setBoard(documents?.board);
+      setReviewd(documents?.reviewd);
       console.log("board details", documents);
+      setLoading(false);
     });
   }, []);
 
@@ -93,16 +98,20 @@ export default function BoardDetails() {
     });
 
     const data = {
-      boardId: id, 
-      userId: currentUser.uid, 
+      boardId: id,
+      userId: currentUser.uid,
       sets,
       leaderboardData: leaderboardSets,
     };
 
     try {
+      setLoading(true)
       await createReview(data);
       toast.success("Review submitted successfully!");
-    } catch ({error}) {
+      setReviewd(true)
+      setLoading(false)
+    } catch ({ error }) {
+      setLoading(false)
       toast.error(error);
     }
   };
@@ -113,19 +122,27 @@ export default function BoardDetails() {
         <title>Create Next App | Boards</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <div className="page-content">
         <div className="flex justify-between">
           <div>
             <h4>{board.name}</h4>
             <p> {board.description}</p>
           </div>
-          <Button
-            variant="contained"
-            className="h-10"
-            onClick={handleSubmitReview}
-          >
-            Submit Review
-          </Button>
+          {!reviewd && items.length > 0 && (
+            <Button
+              variant="contained"
+              className="h-10"
+              onClick={handleSubmitReview}
+            >
+              Submit Review
+            </Button>
+          )}
         </div>
         <Box sx={{ flexGrow: 1, py: 2 }}>
           <DndContext
@@ -138,7 +155,7 @@ export default function BoardDetails() {
             <SortableContext items={items} strategy={rectSortingStrategy}>
               <Grid columns={5}>
                 {items.map((item) => (
-                  <SortableItem key={item.id} id={item.id} data={item} />
+                  <SortableItem key={item.id} id={item.id} data={item} dragable={reviewd ? "false":  "true"}/>
                 ))}
               </Grid>
             </SortableContext>
@@ -147,64 +164,10 @@ export default function BoardDetails() {
                 <Item
                   id={activeId}
                   isDragging
-                  onClick={() => {
-                    setModalItem(
-                      items[items.findIndex((item) => item.id == activeId)]
-                    );
-                    setModalOpen(true);
-                  }}
                 />
               ) : null}
             </DragOverlay>
           </DndContext>
-
-          <Modal
-            open={modalopen}
-            onClose={() => setModalOpen(false)}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={modalStyle}>
-              <div className="mb-2">
-                {modalItem && modalItem.images && (
-                  <img
-                    className="w-100"
-                    src={modalItem?.images[0]?.downloadURL}
-                  />
-                )}
-                {modalItem && modalItem.video && (
-                  <video
-                    width="640"
-                    height="360"
-                    controls
-                    className="h-44 w-auto"
-                  >
-                    <source
-                      src={modalItem?.video.downloadURL}
-                      type="video/mp4"
-                    />
-                    <source
-                      src={modalItem?.video.downloadURL}
-                      type="video/webm"
-                    />
-                    <source
-                      src={modalItem?.video.downloadURL}
-                      type="video/avi"
-                    />
-                  </video>
-                )}
-                <p className="mb-2 text-center text-xl">{modalItem?.name}</p>
-                <p className="mb-2 text-center">{modalItem?.description}</p>
-              </div>
-              <Button
-                variant="contained"
-                className="w-100"
-                onClick={() => setModalOpen(false)}
-              >
-                Close
-              </Button>
-            </Box>
-          </Modal>
         </Box>
       </div>
     </MainLayout>

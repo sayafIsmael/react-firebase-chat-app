@@ -24,6 +24,7 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import Switch from "@mui/material/Switch";
 import Autocomplete from "@mui/material/Autocomplete";
 import Slider from "react-slick";
+import Set from "@/components/Set";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -119,18 +120,6 @@ function Sets() {
     }
   }
 
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    dots: false,
-    arrows: true,
-  };
-
   return (
     <MainLayout>
       <Head>
@@ -152,46 +141,7 @@ function Sets() {
         <Box sx={{ flexGrow: 1, py: 2 }}>
           <Grid container spacing={2}>
             {[...sets].map((item, i) => (
-              <Grid item xs={3} key={item.id}>
-                <Item className="cursor-pointer flex justify-center flex-col">
-                  {item?.images && (
-                    <Slider {...sliderSettings}>
-                      {item?.images.map((image, i) => (
-                        <img
-                          key={i}
-                          src={image.downloadURL}
-                          className="h-44 w-auto"
-                        />
-                      ))}
-                    </Slider>
-                  )}
-                  {item?.video && (
-                    <video
-                      width="640"
-                      height="360"
-                      controls
-                      className="h-44 w-auto"
-                    >
-                      <source src={item?.video.downloadURL} type="video/mp4" />
-                      <source src={item?.video.downloadURL} type="video/webm" />
-                      <source src={item?.video.downloadURL} type="video/avi" />
-                    </video>
-                  )}
-                  <h4 className="text-black my-2">{item.name}</h4>
-                  <p>{item.description}</p>
-                  <div className="flex justify-center gap-2">
-                    {item.boards.map((board, i) => (
-                      <span
-                        onClick={() => router.push(`/user/boards/${board.id}`)}
-                        className="bg-gray-200 p-2 rounded"
-                        key={i}
-                      >
-                        {board.name}
-                      </span>
-                    ))}
-                  </div>
-                </Item>
-              </Grid>
+              <Set key={item.id} item={item} showBoards={true}/>
             ))}
           </Grid>
 
