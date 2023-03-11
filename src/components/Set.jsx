@@ -24,7 +24,7 @@ const sliderSettings = {
   slidesToShow: 1,
   slidesToScroll: 1,
   autoplay: true,
-  autoplaySpeed: 2000,
+  autoplaySpeed: 1000,
   dots: false,
   arrows: true,
   pauseOnHover: false,
