@@ -57,7 +57,7 @@ const Set = ({ item, showPoint, showBoards, dragableButton }) => {
         )}
         <h4 className="text-black my-2">{item.name}</h4>
         <p>{item.description}</p>
-        {item?.point && showPoint && (
+        {item?.point > 0 && showPoint && (
           <p className="flex justify-center">
             <b>Point: </b>
             <span>{item.point}</span>
