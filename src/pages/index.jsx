@@ -34,7 +34,7 @@ function Boards() {
   const [modalopen, setModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [defaultPositions, setDefaultPositions] = useState([10]);
+  const [defaultPositions, setDefaultPositions] = useState([1]);
   const [point, setPoint] = useState(9);
   const [files, setFiles] = useState(null);
   const [url, setUrl] = useState(null);
@@ -46,22 +46,14 @@ function Boards() {
   useEffect(() => {
     getAllBoardsByUserId(currentUser.uid, (documents) => {
       setBoards(documents);
-      console.log("boards",documents);
+      console.log("boards", documents);
     });
   }, []);
 
-  function addPosition() {
-    if (defaultPositions[defaultPositions.length - 1] > 1) {
-      setDefaultPositions([...defaultPositions, point]);
-      setPoint(point - 1);
-    }
-  }
-
-  function addPoint(e) {
-    const value = e.target.value;
-    if (value > 0 && defaultPositions[defaultPositions.length - 1] > value) {
-      setPoint(value);
-    }
+  function editPosition(e, index) {
+    const poitions = [...defaultPositions];
+    poitions[index] = Number(e.target.value);
+    setDefaultPositions(poitions);
   }
 
   const handleFiles = (files) => {
@@ -131,7 +123,10 @@ function Boards() {
                     style={{ height: 200 }}
                   />
                   <h4>{item.name}</h4>
-                  <p>{item.description.substr(0, 50) + (item.description.length > 50 ? "..." : "")}</p>
+                  <p>
+                    {item.description.substr(0, 50) +
+                      (item.description.length > 50 ? "..." : "")}
+                  </p>
                   {/* <p>User reviews: {item.reviews.length}</p> */}
                 </Item>
               </Grid>
@@ -185,35 +180,22 @@ function Boards() {
                   <p>Position: {i + 1}</p>
                   <TextField
                     className="w-10"
-                    disabled
                     id={"position" + i}
                     label="points"
                     defaultValue={point}
                     variant="standard"
+                    onChange={(e) => editPosition(e, i)}
                   />
                 </div>
               ))}
-              {defaultPositions[defaultPositions.length - 1] > 1 && (
-                <div className="flex justify-between mb-3 items-center">
-                  <p>Position: {defaultPositions.length + 1}</p>
-                  <Button
-                    className="mb-3"
-                    variant="contained"
-                    onClick={addPosition}
-                  >
-                    Add
-                  </Button>
-                  <TextField
-                    className="w-10"
-                    id={"position" + defaultPositions.length + 1}
-                    label="points"
-                    variant="standard"
-                    onChange={addPoint}
-                    value={point}
-                    type="number"
-                  />
-                </div>
-              )}
+              <Button
+                disabled={loading}
+                className="mb-3 w-100"
+                variant="contained"
+                onClick={() => setDefaultPositions([...defaultPositions, 1])}
+              >
+                Add New Position
+              </Button>
               <LoadingButton
                 loading={loading}
                 className="w-100"
