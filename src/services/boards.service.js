@@ -15,7 +15,6 @@ import {
   updateDoc,
   increment,
   writeBatch,
-  subcollection,
 } from "firebase/firestore";
 import { FirestoreDataConverter } from "@firebase/util";
 import { v4 as uuid } from "uuid";
@@ -72,7 +71,7 @@ export async function getAllBoards(callback) {
 
 export async function getAllBoardsByUserId(userId, callback) {
   const boardRef = collection(db, "boards");
-  const q = query(boardRef, where("userId", "==", userId))
+  const q = query(boardRef, where("userId", "==", userId));
   const unsubscribe = onSnapshot(q, (querySnapshot) => {
     const documents = querySnapshot.docs.map((doc) => doc.data());
     callback(documents);
@@ -137,36 +136,33 @@ export function createReview(data) {
 
     const existingReview = await getDoc(reviewsRef);
 
-    const leaderboardRef = doc(collection(db, "leaderboards"), boardId);
-    const existingLeaderBoard = await getDoc(leaderboardRef);
+    const leaderboardRef = collection(db, "leaderboards", boardId, "sets");
 
     try {
       if (!existingReview.exists()) {
-        //Add Review
-        await setDoc(reviewsRef, { sets });
+        const batch = writeBatch(db);
 
-        // Update or create the document
-        if (existingLeaderBoard.exists()) {
-          const batch = writeBatch(db);
+        const promises = leaderboardData.map(async (set) => {
+          const { id, point } = set;
+          const setRef = doc(leaderboardRef, id);
+          const setData = await getDoc(setRef);
 
-          leaderboardData.forEach((item) => {
-            const { id, point } = item;
-            const leaderboardDocField = `${id}.point`;
+          if (setData.exists()) {
             const pointIncrement = increment(point);
-            batch.update(leaderboardRef, {
-              [leaderboardDocField]: pointIncrement,
+            batch.update(setRef, {
+              point: pointIncrement,
             });
-          });
-          await batch.commit();
-        } else {
-          const data = {};
-          leaderboardData.forEach((item) => {
-            data[item.id] = item; // Store the item with the ID as the key in the leaderboardData object
-          });
-          await setDoc(leaderboardRef, data, { merge: true });
-        }
+          } else {
+            batch.set(setRef, set);
+          }
+        });
 
-        resolve({ success: true });
+        Promise.all(promises).then(async () => {
+          await batch.commit();
+          //Add Review
+          await setDoc(reviewsRef, { sets });
+          resolve({ success: true });
+        });
       } else {
         reject({ error: "Review already submitted" });
       }
@@ -180,18 +176,16 @@ export function createReview(data) {
 export async function getLeaderBoardDetails(boardId, callback) {
   const setsRef = collection(db, "sets");
 
-  const leaderboardRef = collection(db, "leaderboards");
-  const leaderBoardQuery = doc(leaderboardRef, boardId);
+  const leaderboardRef = collection(db, "leaderboards", boardId, "sets");
 
   const boardRef = doc(collection(db, "boards"), boardId);
   const boardData = await getDoc(boardRef);
 
   // listen for updates to the board document with id == boardId
-  const unsubscribe = onSnapshot(leaderBoardQuery, (leaderboardSnapshot) => {
-    if (leaderboardSnapshot.exists()) {
-      const sets = Object.values(leaderboardSnapshot.data()).sort(
-        (a, b) => b.point - a.point
-      );
+  const unsubscribe = onSnapshot(leaderboardRef, (leaderboardSnapshot) => {
+    const data = leaderboardSnapshot.docs.map((doc) => doc.data());
+    if (data.length > 0) {
+      const sets = data.sort((a, b) => b.point - a.point);
       const response = { sets, board: boardData.data() };
       console.log("leaderBoards data: ", response);
       callback(response);

@@ -7,6 +7,7 @@ import Slider from "react-slick";
 import Modal from "@mui/material/Modal";
 import { modalStyle } from "@/styles/mui";
 import Button from "@mui/material/Button";
+import { useRouter } from "next/router";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -26,10 +27,12 @@ const sliderSettings = {
   autoplaySpeed: 2000,
   dots: false,
   arrows: true,
+  pauseOnHover: false,
 };
 
 const Set = ({ item, showPoint, showBoards, dragableButton }) => {
   const [modalopen, setModalOpen] = useState(false);
+  const router = useRouter();
 
   const handleOpen = () => {
     setModalOpen(!modalopen);

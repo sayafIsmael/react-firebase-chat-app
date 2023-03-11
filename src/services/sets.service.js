@@ -3,6 +3,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import {
   doc,
   collection,
+  updateDoc,
   addDoc,
   setDoc,
   getDocs,
@@ -13,6 +14,8 @@ import {
   field,
   query,
   serverTimestamp,
+  writeBatch,
+  arrayUnion,
 } from "firebase/firestore";
 import { v4 as uuid } from "uuid";
 import { uploadFiles } from "./files.service";
@@ -28,24 +31,45 @@ export function createSet({
 }) {
   return new Promise(async (resolve, reject) => {
     const id = uuid();
-    const myCollectionRef = doc(db, "sets", id);
+    const setCollectionRef = doc(db, "sets", id);
+    const set = {
+      id,
+      name,
+      description,
+      images: isImages ? await uploadFiles(images) : null,
+      video: isImages ? null : (await uploadFiles([video]))[0],
+      boards,
+      userId,
+      createdAt: serverTimestamp(),
+    };
 
     try {
       //Add Set
-      await setDoc(myCollectionRef, {
-        id,
-        name,
-        description,
-        images: isImages ? await uploadFiles(images) : null,
-        video: isImages ? null : (await uploadFiles([video]))[0],
-        boards,
-        userId,
-        createdAt: serverTimestamp(),
+
+      const batch = writeBatch(db);
+
+      const promises = boards.map(async (board) => {
+        const boardId = board.id;
+        const leaderboardRef = doc(db, `leaderboards/${boardId}/sets`, id);
+
+        batch.set(leaderboardRef, { ...set, point: 0 });
+
+        const { createdAt, ...newObject } = set;
+        const reviewsRef = doc(db, `reviews/${userId}/boards`, boardId);
+        const setData = {
+          sets: arrayUnion(newObject),
+        };
+        await updateDoc(reviewsRef, setData);
       });
 
-      resolve({ success: true });
+      Promise.all(promises).then(async () => {
+        await batch.commit();
+        await setDoc(setCollectionRef, set);
+        resolve({ success: true });
+      });
     } catch (error) {
       reject(error);
+      console.log(error);
     }
   });
 }

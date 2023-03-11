@@ -34,11 +34,6 @@ export default function MainLayout({ children }) {
 
   const routes = [
     {
-      name: "Chat",
-      link: "/",
-      icon: <MailIcon />,
-    },
-    {
       name: "Leaderborad",
       link: "/leaderboard",
       icon: <LeaderboardIcon />,
@@ -50,13 +45,18 @@ export default function MainLayout({ children }) {
       subItems: [
         {
           name: "Boards",
-          link: "/user/boards",
+          link: "/",
           icon: <DashboardIcon />,
         },
         {
           name: "Sets",
           link: "/user/sets",
           icon: <DashboardCustomizeIcon />,
+        },
+        {
+          name: "Chat",
+          link: "/chat",
+          icon: <MailIcon />,
         },
       ],
     },
