@@ -56,10 +56,13 @@ export function createSet({
 
         const { createdAt, ...newObject } = set;
         const reviewsRef = doc(db, `reviews/${userId}/boards`, boardId);
-        const setData = {
-          sets: arrayUnion(newObject),
-        };
-        await updateDoc(reviewsRef, setData);
+        const reviewData = await getDoc(reviewsRef);
+        if (reviewData.exists()) {
+          const setData = {
+            sets: arrayUnion(newObject),
+          };
+          await updateDoc(reviewsRef, setData);
+        }
       });
 
       Promise.all(promises).then(async () => {
