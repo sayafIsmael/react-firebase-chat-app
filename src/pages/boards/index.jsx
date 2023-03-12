@@ -3,6 +3,7 @@ import React, { useContext, useState, useCallback, useEffect } from "react";
 import Auth from "@/utils/Auth";
 import MainLayout from "@/layouts/MainLayout";
 import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import { useRouter } from "next/router";
 import Button from "@mui/material/Button";
@@ -12,13 +13,11 @@ import { modalStyle } from "@/styles/mui";
 import TextField from "@mui/material/TextField";
 import { FiCamera } from "react-icons/fi";
 import ReactFileReader from "react-file-reader";
-import { getAllBoardsByUserId, createBoard } from "@/services/boards.service";
+import { getAllBoards, createBoard } from "@/services/boards.service";
 import SaveIcon from "@mui/icons-material/Save";
 import { AuthContext } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Board from "@/components/Board";
 
 
@@ -34,13 +33,11 @@ function Boards() {
   const [url, setUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [successBoard, setSuccessBoard] = useState({ name: "", id: "" });
 
   const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
-    getAllBoardsByUserId(currentUser.uid, (documents) => {
+    getAllBoards((documents) => {
       setBoards(documents);
       console.log("boards", documents);
     });
@@ -71,30 +68,20 @@ function Boards() {
   async function saveBoard() {
     try {
       setLoading(true);
-      await createBoard(
-        {
-          name,
-          description,
-          defaultPositions,
-          thumbnail: files?.fileList[0],
-          userId: currentUser.uid,
-        },
-        (board) => {
-          setSuccess(true);
-          setSuccessBoard(board);
-        }
-      );
+      await createBoard({
+        name,
+        description,
+        defaultPositions,
+        thumbnail: files?.fileList[0],
+        userId: currentUser.uid,
+      });
       resetForm();
+      toast.success("Board created successfully!");
     } catch (error) {
       setError(error);
       console.log(error);
       toast.error("Something went wrong!");
     }
-  }
-
-  async function copyInviteLink(text) {
-    await navigator.clipboard.writeText(text);
-    toast.success("Link copied successfully!");
   }
 
   return (
@@ -105,20 +92,20 @@ function Boards() {
       </Head>
       <div className="page-content">
         <div className="flex justify-between">
-          <h1>Boards</h1>
-          <Button
+          <h1>All Boards</h1>
+          {/* <Button
             variant="contained"
             className="gap-2"
             onClick={() => setModalOpen(true)}
           >
             <AddIcon />
             Add New
-          </Button>
+          </Button> */}
         </div>
         <Box sx={{ flexGrow: 1, py: 2 }}>
           <Grid container spacing={2}>
             {[...boards].map((item, i) => (
-              <Board key={item.id} item={item} />
+              <Board key={item.id} item={item}/>
             ))}
           </Grid>
 
@@ -195,45 +182,6 @@ function Boards() {
               >
                 Save
               </LoadingButton>
-            </Box>
-          </Modal>
-
-          <Modal
-            open={success}
-            onClose={() => setSuccess(false)}
-            aria-labelledby="success-modal-title"
-            aria-describedby="success-modal-description"
-          >
-            <Box sx={modalStyle}>
-              <div class="flex justify-center items-center">
-                <div class="flex flex-col justify-center items-center">
-                  <CheckCircleIcon
-                    fontSize="large"
-                    color="success"
-                    style={{ fontSize: 80 }}
-                  />
-                  <p className="text-2xl">Success</p>
-                  <p>Board {successBoard.name} created successfully</p>
-                  <div className="flex">
-                    <p className="mr-2">
-                      <span className="font-bold">Invite link: </span>
-                      {`${window.location.host}/boards/${successBoard.id
-                        .toString()
-                        .slice(0, 4)}..`}
-                    </p>
-                    <ContentCopyIcon
-                      className="cursor-pointer"
-                      onClick={() =>
-                        copyInviteLink(
-                          `${
-                            window.location.host
-                          }/boards/${successBoard.id.toString()}`
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
             </Box>
           </Modal>
         </Box>

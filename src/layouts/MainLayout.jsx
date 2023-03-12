@@ -21,6 +21,7 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { useRouter } from "next/router";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import PersonIcon from "@mui/icons-material/Person";
+import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 
 const drawerWidth = 240;
 
@@ -37,6 +38,11 @@ export default function MainLayout({ children }) {
       name: "Leaderborad",
       link: "/leaderboard",
       icon: <LeaderboardIcon />,
+    },
+    {
+      name: "All Boards",
+      link: "/boards",
+      icon: <DeveloperBoardIcon />,
     },
     {
       name: "User",
