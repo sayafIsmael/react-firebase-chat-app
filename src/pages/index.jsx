@@ -21,7 +21,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Board from "@/components/Board";
 
-
 function Boards() {
   const router = useRouter();
   const [boards, setBoards] = useState([]);
@@ -213,7 +212,10 @@ function Boards() {
                     style={{ fontSize: 80 }}
                   />
                   <p className="text-2xl">Success</p>
-                  <p>Board {successBoard.name} created successfully</p>
+                  <p>
+                    <span className="font-bold">Board</span> {successBoard.name}{" "}
+                    created successfully
+                  </p>
                   <div className="flex">
                     <p className="mr-2">
                       <span className="font-bold">Invite link: </span>
