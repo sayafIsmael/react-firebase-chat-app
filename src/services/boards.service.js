@@ -19,13 +19,10 @@ import {
 import { FirestoreDataConverter } from "@firebase/util";
 import { v4 as uuid } from "uuid";
 
-export function createBoard({
-  name,
-  description,
-  defaultPositions,
-  thumbnail,
-  userId,
-}) {
+export function createBoard(
+  { name, description, defaultPositions, thumbnail, userId },
+  callback
+) {
   return new Promise(async (resolve, reject) => {
     const id = uuid();
     const date = new Date().getTime();
@@ -49,6 +46,7 @@ export function createBoard({
             });
 
             resolve({ success: true });
+            callback({ id, name });
           } catch (error) {
             reject(error);
           }
